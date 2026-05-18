@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BetalaTheme {
                 BetalaApp()
+
             }
         }
     }
@@ -138,7 +139,7 @@ fun Header(modifier: Modifier = Modifier){
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
     Text(
-        text = "Welcome to Betala, Sudoko Variants!",
+        text = "Welcome to Betala, Sudoku Variants!",
         color = MaterialTheme.colorScheme.secondary,
         fontSize = 20.sp,
         modifier = modifier.padding(10.dp)
