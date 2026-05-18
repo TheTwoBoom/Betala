@@ -77,9 +77,11 @@ fun BetalaApp() {
                 verticalArrangement = Arrangement.Center,
             ) {
                 Header(modifier = Modifier.padding(innerPadding))
+
                 Greeting(
                     modifier = Modifier.padding(innerPadding)
                 )
+
                 Row(Modifier.padding(innerPadding).fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally)
                 ) {
