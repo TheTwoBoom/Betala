@@ -75,38 +75,28 @@ fun BetalaApp() {
                 Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                ){
-
-            Header(modifier = Modifier.padding(innerPadding))
-            Greeting(
-                modifier = Modifier.padding(innerPadding)
-
-            )
-
-
-            Row(Modifier.padding(innerPadding).fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally)
             ) {
-                Button(
-
-                    onClick = {
-                        //Code für das Ausführen. Bitte nicht als anonyme Funktion!!!!!
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                Header(modifier = Modifier.padding(innerPadding))
+                Greeting(
+                    modifier = Modifier.padding(innerPadding)
+                )
+                Row(Modifier.padding(innerPadding).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally)
                 ) {
-                    Text(text = "Continue")
-                }
-
-                Button(
-                    onClick = {
-
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-
-                ) {
-                    Text(text = "Select level")
-                }
-
+                    Button(
+                        onClick = {
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ) {
+                        Text(text = "Continue")
+                    }
+                    Button(
+                        onClick = {
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ) {
+                        Text(text = "Select level")
+                    }
                 }
             }
         }
@@ -139,7 +129,7 @@ fun Header(modifier: Modifier = Modifier){
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
     Text(
-        text = "Welcome to Betala, Sudoku Variants!",
+        text = "Welcome to Betala - Sudoku Variants!",
         color = MaterialTheme.colorScheme.secondary,
         fontSize = 20.sp,
         modifier = modifier.padding(10.dp)
