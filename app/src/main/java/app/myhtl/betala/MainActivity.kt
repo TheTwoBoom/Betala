@@ -82,22 +82,56 @@ fun BetalaApp() {
                     modifier = Modifier.padding(innerPadding)
                 )
 
-                Row(Modifier.padding(innerPadding).fillMaxWidth(),
+                Row(Modifier
+                    .padding(horizontal = 50.dp)
+                    .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally)
                 ) {
                     Button(
                         onClick = {
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "Continue")
+                        Text(text = "Daily challenge")
                     }
                     Button(
                         onClick = {
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text(text = "Select level")
+                    }
+                }
+                Button(
+                    modifier = Modifier.padding(horizontal = 50.dp, vertical = 10.dp),
+                    onClick = {
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                ) {
+                    Text(text = "Select level")
+                }
+                Column(Modifier
+                    .padding(horizontal = 50.dp, vertical = 25.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    Text(
+                        text = "Enjoying the app? Consider donating to support development!",
+                        fontSize = 15.sp,
+                        modifier = Modifier.padding(20.dp)
+                    )
+                    Button(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+                        onClick = {
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ) {
+                        Text(
+                            text = "Donate",
+                            fontSize = 25.sp
+                        )
                     }
                 }
             }
