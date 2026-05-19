@@ -1,12 +1,5 @@
 package app.myhtl.betala
 
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,13 +25,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
+import app.myhtl.betala.opensudoku.SudokuGame
 import app.myhtl.betala.ui.theme.BetalaTheme
 import app.myhtl.betala.ui.theme.navigation.FavoriteScreen
 import app.myhtl.betala.ui.theme.navigation.HomeScreen
@@ -159,7 +152,7 @@ fun BetalaApp() {
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
-                    Text(text = "Generate Sudoku")
+                    Text(text = "Random level")
                 }
                 Column(Modifier
                     .padding(horizontal = 50.dp, vertical = 25.dp),
@@ -174,6 +167,7 @@ fun BetalaApp() {
                     Button(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
                         onClick = {
+                            activity?.startActivity(Intent(Intent.ACTION_VIEW, "https://buymeacoffee.com/".toUri()), null)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {
