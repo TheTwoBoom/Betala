@@ -71,13 +71,9 @@ fun BetalaApp() {
             ?.route
 
     NavigationSuiteScaffold(
-
         navigationSuiteItems = {
-
             AppDestinations.entries.forEach {
-
                 item(
-
                     icon = {
                         Icon(
                             painterResource(it.icon),
@@ -85,13 +81,10 @@ fun BetalaApp() {
                             modifier = Modifier.size(40.dp)
                         )
                     },
-
                     label = {
                         Text(it.label)
                     },
-
                     selected = currentRoute == it.route,
-
                     onClick = {
                         navController.navigate(it.route)
                     }
@@ -104,15 +97,12 @@ fun BetalaApp() {
             navController = navController,
             startDestination = AppDestinations.HOME.route
         ) {
-
             composable(AppDestinations.HOME.route) {
                 HomeScreen(navController)
             }
-
             composable(AppDestinations.SETTINGS.route) {
                 SettingsScreen(navController)
             }
-
             composable(AppDestinations.FAVORITES.route) {
                 FavoriteScreen(navController)
             }
