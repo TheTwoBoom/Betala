@@ -1,5 +1,12 @@
 package app.myhtl.betala
 
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,6 +41,10 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.myhtl.betala.ui.theme.BetalaTheme
+import app.myhtl.betala.ui.theme.navigation.FavoriteScreen
+import app.myhtl.betala.ui.theme.navigation.HomeScreen
+import app.myhtl.betala.ui.theme.navigation.SettingsScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,26 +61,64 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun BetalaApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+
+    val navController = rememberNavController()
+
+    val currentBackStackEntry by
+    navController.currentBackStackEntryAsState()
+
+    val currentRoute =
+        currentBackStackEntry
+            ?.destination
+            ?.route
 
     NavigationSuiteScaffold(
+
         navigationSuiteItems = {
+
             AppDestinations.entries.forEach {
+
                 item(
+
                     icon = {
                         Icon(
                             painterResource(it.icon),
-                            contentDescription = it.label ,
+                            contentDescription = it.label,
                             modifier = Modifier.size(40.dp)
                         )
                     },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
+
+                    label = {
+                        Text(it.label)
+                    },
+
+                    selected = currentRoute == it.route,
+
+                    onClick = {
+                        navController.navigate(it.route)
+                    }
                 )
             }
         }
+
     ) {
+        NavHost(
+            navController = navController,
+            startDestination = AppDestinations.HOME.route
+        ) {
+
+            composable(AppDestinations.HOME.route) {
+                HomeScreen(navController)
+            }
+
+            composable(AppDestinations.SETTINGS.route) {
+                SettingsScreen(navController)
+            }
+
+            composable(AppDestinations.FAVORITES.route) {
+                FavoriteScreen(navController)
+            }
+        }
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             Column(
                 Modifier.fillMaxSize(),
@@ -110,7 +159,7 @@ fun BetalaApp() {
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
-                    Text(text = "Select level")
+                    Text(text = "Generate Sudoku")
                 }
                 Column(Modifier
                     .padding(horizontal = 50.dp, vertical = 25.dp),
@@ -133,20 +182,23 @@ fun BetalaApp() {
                             fontSize = 25.sp
                         )
                     }
+
                 }
             }
         }
     }
+
 }
 
 enum class AppDestinations(
     val label: String,
     val icon: Int,
+    val route: String
 ) {
 
-    FAVORITES("Favorites", R.drawable.ic_favorite),
-    HOME("Home", R.drawable.ic_home),
-    SETTINGS("Settings", R.drawable.outline_settings_24),
+    FAVORITES("Favorites", R.drawable.ic_favorite, route = "favorites"),
+    HOME("Home", R.drawable.ic_home, route = "home"),
+    SETTINGS("Settings", R.drawable.outline_settings_24, route = "settings"),
 
 }
 
