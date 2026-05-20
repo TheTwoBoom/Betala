@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -59,11 +59,10 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun BetalaApp() {
-    var activity = LocalContext.current as? Activity
+    val activity: Activity = LocalContext.current as Activity
     val navController = rememberNavController()
 
-    val currentBackStackEntry by
-    navController.currentBackStackEntryAsState()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
 
     val currentRoute =
         currentBackStackEntry
@@ -78,7 +77,7 @@ fun BetalaApp() {
                         Icon(
                             painterResource(it.icon),
                             contentDescription = it.label,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(32.dp)
                         )
                     },
                     label = {
@@ -90,8 +89,8 @@ fun BetalaApp() {
                     }
                 )
             }
-        }
-
+        },
+        layoutType = NavigationSuiteType.ShortNavigationBarCompact
     ) {
         NavHost(
             navController = navController,
@@ -162,7 +161,7 @@ fun BetalaApp() {
                     Button(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
                         onClick = {
-                            activity?.startActivity(
+                            activity.startActivity(
                                 Intent(
                                     Intent.ACTION_VIEW,
                                     "https://buymeacoffee.com/".toUri()
@@ -175,7 +174,6 @@ fun BetalaApp() {
                             fontSize = 25.sp
                         )
                     }
-
                 }
             }
         }
@@ -197,7 +195,7 @@ enum class AppDestinations(
 
 
 @Composable
-fun Header(modifier: Modifier = Modifier){
+fun Header(modifier: Modifier = Modifier) {
     Text(
         text = "Betala",
         modifier = modifier,
