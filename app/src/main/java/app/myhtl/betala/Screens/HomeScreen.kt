@@ -1,4 +1,4 @@
-package app.myhtl.betala.ui.theme.navigation
+package app.myhtl.betala.Screens
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -22,8 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-import app.myhtl.betala.Greeting
-import app.myhtl.betala.Header
+import app.myhtl.betala.AppAdditionalDestinations
 
 @SuppressLint("ContextCastToActivity")
 @Composable
@@ -35,7 +34,7 @@ fun HomeScreen(navController: NavController){
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Header(modifier = Modifier.padding(innerPadding))
+            MainHeader(modifier = Modifier.padding(innerPadding))
 
             Greeting(
                 modifier = Modifier.padding(innerPadding)
@@ -66,6 +65,7 @@ fun HomeScreen(navController: NavController){
             Button(
                 modifier = Modifier.padding(horizontal = 50.dp, vertical = 10.dp),
                 onClick = {
+                    navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {

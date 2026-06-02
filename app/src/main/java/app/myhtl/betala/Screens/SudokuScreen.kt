@@ -1,4 +1,4 @@
-package app.myhtl.betala.ui.theme.navigation
+package app.myhtl.betala.Screens
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
