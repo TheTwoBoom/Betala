@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +25,9 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -32,7 +35,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -62,36 +64,37 @@ fun BetalaApp() {
     val activity: Activity = LocalContext.current as Activity
     val navController = rememberNavController()
 
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
-    val currentRoute =
-        currentBackStackEntry
-            ?.destination
-            ?.route
-
+    var selectedItemIndex by remember { mutableIntStateOf(0) }
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            AppDestinations.entries.forEach {
+            AppDestinations.entries.forEachIndexed { index, destinations ->
                 item(
                     icon = {
                         Icon(
-                            painterResource(it.icon),
-                            contentDescription = it.label,
+                            painterResource(destinations.icon),
+                            contentDescription = destinations.label,
                             modifier = Modifier.size(32.dp)
                         )
                     },
                     label = {
-                        Text(it.label)
+                        Text(text = destinations.label)
                     },
-                    selected = currentRoute == it.route,
+                    selected = index == selectedItemIndex,
                     onClick = {
-                        navController.navigate(it.route)
+                        selectedItemIndex = index
+                        navController.navigate(destinations.route)
                     }
                 )
             }
         },
         layoutType = NavigationSuiteType.ShortNavigationBarCompact
     ) {
+
+
+
         NavHost(
             navController = navController,
             startDestination = AppDestinations.HOME.route
@@ -106,77 +109,7 @@ fun BetalaApp() {
                 FavoriteScreen(navController)
             }
         }
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Column(
-                Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Header(modifier = Modifier.padding(innerPadding))
 
-                Greeting(
-                    modifier = Modifier.padding(innerPadding)
-                )
-
-                Row(Modifier
-                    .padding(horizontal = 50.dp)
-                    .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally)
-                ) {
-                    Button(
-                        onClick = {
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = "Daily challenge")
-                    }
-                    Button(
-                        onClick = {
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = "Select level")
-                    }
-                }
-                Button(
-                    modifier = Modifier.padding(horizontal = 50.dp, vertical = 10.dp),
-                    onClick = {
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-                    Text(text = "Random level")
-                }
-                Column(Modifier
-                    .padding(horizontal = 50.dp, vertical = 25.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    Text(
-                        text = "Enjoying the app? Consider donating to support development!",
-                        fontSize = 15.sp,
-                        modifier = Modifier.padding(20.dp)
-                    )
-                    Button(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
-                        onClick = {
-                            activity.startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    "https://buymeacoffee.com/".toUri()
-                                ), null)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                    ) {
-                        Text(
-                            text = "Donate",
-                            fontSize = 25.sp
-                        )
-                    }
-                }
-            }
-        }
     }
 
 }
