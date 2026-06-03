@@ -35,13 +35,13 @@ import app.myhtl.betala.screens.SettingsScreen
 import app.myhtl.betala.screens.SudokuScreen
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             BetalaTheme {
                 BetalaApp()
-
             }
         }
     }

@@ -3,6 +3,7 @@ package app.myhtl.betala.screens
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,14 +22,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.NavController
 import app.myhtl.betala.AppAdditionalDestinations
 import androidx.compose.ui.res.stringResource
 import app.myhtl.betala.R
+import app.myhtl.betala.opensudoku.SudokuGame
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun HomeScreen(navController: NavController){
     val activity: Activity = LocalContext.current as Activity
+    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        SudokuGame.parseSudokuFile(uri)
+    }
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             Modifier.fillMaxSize(),
@@ -40,7 +47,6 @@ fun HomeScreen(navController: NavController){
             Greeting(
                 modifier = Modifier.padding(innerPadding)
             )
-
             Row(Modifier
                 .padding(horizontal = 50.dp)
                 .fillMaxWidth(),
@@ -56,11 +62,12 @@ fun HomeScreen(navController: NavController){
                 }
                 Button(
                     onClick = {
+                        getContent.launch(arrayOf("application/xml", "text/xml", "application/opensudoku"))
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "Select level")
+                    Text(text = "Select Level")
                 }
             }
             Button(

@@ -2,6 +2,8 @@ package app.myhtl.betala.opensudoku
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.core.app.ActivityCompat.startActivityForResult
 
 object SudokuGame {
@@ -53,12 +55,7 @@ object SudokuGame {
             return true
         }
     }
-    fun getFileFromUser(activity: Activity) {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "application/xml"
-        }
-        startActivityForResult(activity, intent, 2, null)
+    fun parseSudokuFile(uri: Uri?): Game {
+        TODO("No File Handling yet")
     }
-    fun parseSudokuFile(fileContent: String) {}
 }

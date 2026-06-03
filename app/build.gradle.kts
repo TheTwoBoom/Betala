@@ -40,6 +40,8 @@ android {
 }
 
 dependencies {
+    implementation("androidx.activity:activity-ktx:1.13.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.9")
     implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
