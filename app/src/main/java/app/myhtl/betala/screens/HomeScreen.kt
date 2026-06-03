@@ -23,7 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import app.myhtl.betala.AppAdditionalDestinations
-
+import androidx.compose.ui.res.stringResource
+import app.myhtl.betala.R
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun HomeScreen(navController: NavController){
@@ -69,7 +70,7 @@ fun HomeScreen(navController: NavController){
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
-                Text(text = "Random level")
+                Text(text = stringResource(R.string.random_level))
             }
             Column(
                 Modifier.padding(horizontal = 50.dp, vertical = 25.dp),
