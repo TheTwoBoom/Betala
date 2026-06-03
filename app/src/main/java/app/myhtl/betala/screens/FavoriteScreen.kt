@@ -13,8 +13,10 @@ import androidx.navigation.NavController
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.myhtl.betala.R
 
 
 @Composable
@@ -29,7 +31,7 @@ fun FavoriteScreen(navController: NavController){
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
-            Header(modifier = Modifier.padding(top = 25.dp), text = "Your Favorite Sudokus")
+            Header(modifier = Modifier.padding(top = 25.dp), text = stringResource(R.string.favorites_header))
 
             LazyColumn(
                 modifier = Modifier.padding(top = 20.dp).weight(1f),

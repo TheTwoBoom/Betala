@@ -52,7 +52,7 @@ fun HomeScreen(navController: NavController){
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "Daily challenge")
+                    Text(text = stringResource(R.string.daily_challenge))
                 }
                 Button(
                     onClick = {
@@ -60,7 +60,7 @@ fun HomeScreen(navController: NavController){
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "Select level")
+                    Text(text = stringResource(R.string.select_level))
                 }
             }
             Button(
@@ -78,7 +78,7 @@ fun HomeScreen(navController: NavController){
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = "Enjoying the app? Consider donating to support development!",
+                    text = stringResource(R.string.donate_text),
                     fontSize = 15.sp,
                     modifier = Modifier.padding(20.dp)
                 )
@@ -94,7 +94,7 @@ fun HomeScreen(navController: NavController){
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
                     Text(
-                        text = "Donate",
+                        text = stringResource(R.string.donate),
                         fontSize = 25.sp
                     )
                 }
