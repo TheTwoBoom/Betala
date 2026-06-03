@@ -1,11 +1,8 @@
 package app.myhtl.betala.opensudoku
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.util.AtomicFile
 import androidx.core.app.ActivityCompat.startActivityForResult
-import app.myhtl.betala.MainActivity
 
 object SudokuGame {
     data class Game(val board: Array<IntArray>) {

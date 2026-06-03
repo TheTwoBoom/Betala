@@ -1,7 +1,6 @@
 package app.myhtl.betala
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,7 +18,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
@@ -31,10 +29,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import app.myhtl.betala.ui.theme.BetalaTheme
-import app.myhtl.betala.Screens.FavoriteScreen
-import app.myhtl.betala.Screens.HomeScreen
-import app.myhtl.betala.Screens.SettingsScreen
-import app.myhtl.betala.Screens.SudokuScreen
+import app.myhtl.betala.screens.FavoriteScreen
+import app.myhtl.betala.screens.HomeScreen
+import app.myhtl.betala.screens.SettingsScreen
+import app.myhtl.betala.screens.SudokuScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +51,7 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun BetalaApp() {
-    val activity: Activity = LocalContext.current as Activity
+    //val activity: Activity = LocalContext.current as Activity
     val navController = rememberNavController()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()

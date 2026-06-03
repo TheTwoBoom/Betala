@@ -1,4 +1,4 @@
-package app.myhtl.betala.Screens
+package app.myhtl.betala.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.fillMaxSize

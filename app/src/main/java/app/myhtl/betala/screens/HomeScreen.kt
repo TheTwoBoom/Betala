@@ -1,4 +1,4 @@
-package app.myhtl.betala.Screens
+package app.myhtl.betala.screens
 
 import android.annotation.SuppressLint
 import android.app.Activity
