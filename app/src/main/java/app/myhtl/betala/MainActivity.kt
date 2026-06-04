@@ -2,6 +2,7 @@ package app.myhtl.betala
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,9 +15,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
@@ -35,7 +33,6 @@ import app.myhtl.betala.screens.SettingsScreen
 import app.myhtl.betala.screens.SudokuScreen
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -64,7 +61,6 @@ fun BetalaApp() {
     val windowSizeClass = adaptiveInfo.windowSizeClass
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    var selectedItemIndex by remember { mutableIntStateOf(0) }
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             AppDestinations.entries.forEach { destinations ->

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,13 +29,20 @@ import androidx.navigation.NavController
 import app.myhtl.betala.AppAdditionalDestinations
 import androidx.compose.ui.res.stringResource
 import app.myhtl.betala.R
-import app.myhtl.betala.opensudoku.SudokuGame
+import app.myhtl.betala.opensudoku.GameManager
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun HomeScreen(navController: NavController){
     val activity: Activity = LocalContext.current as Activity
+    val context = LocalContext.current
     val getContent = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-        SudokuGame.parseSudokuFile(uri)
+        uri?.let { nonNullUri ->
+            try {
+                GameManager.parseSudokuFile(context, nonNullUri)
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error parsing file", e)
+            }
+        }
     }
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
