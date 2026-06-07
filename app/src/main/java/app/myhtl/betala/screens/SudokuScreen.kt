@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -89,15 +90,15 @@ fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>){
             .border(width = 4.dp, color = MaterialTheme.colorScheme.primary),
         columns = GridCells.Fixed(row_count)
     ){
-        items(cells) { value ->
-            SudokuCell(value)
+        itemsIndexed(cells) {index, value ->
+            SudokuCell(value, index)
         }
     }
 }
 
 @Composable
-fun SudokuCell(value: Int){
-    var text = ""
+fun SudokuCell(value: Int, i: Int){
+    var text: String
     if (value == 0) {
         text = ""
     } else {
@@ -105,9 +106,10 @@ fun SudokuCell(value: Int){
     }
 
 
-    val column = value/9
-    val row = value%9
-
+    val column = i/9
+    val row = i%9
+    println(row)
+    println(column)
     val bigGridLine_vertical = if (column%3 == 0) 5.dp else 1.dp
     val bigGridLine_horizontal = if(row%3 == 0) 5.dp else 1.dp
 
