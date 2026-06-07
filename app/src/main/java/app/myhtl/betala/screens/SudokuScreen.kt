@@ -108,13 +108,11 @@ fun SudokuCell(value: Int){
     val column = value/9
     val row = value%9
 
-    val bigGridLine_vertical = if (column%3 == 0) 3.dp else 1.dp
-    val bigGridLine_horizontal = if(row%3 == 0) 3.dp else 1.dp
+    val bigGridLine_vertical = if (column%3 == 0) 5.dp else 1.dp
+    val bigGridLine_horizontal = if(row%3 == 0) 5.dp else 1.dp
 
     Box(modifier = Modifier
         .aspectRatio(1f)
-        .padding(1.dp)
-        .background(MaterialTheme.colorScheme.tertiary)
         .drawBehind {
             drawLine(
                 color = Color.Black,
@@ -122,13 +120,13 @@ fun SudokuCell(value: Int){
                 end = Offset(size.width, 0f),
                 strokeWidth = bigGridLine_horizontal.toPx()
             )
-
             drawLine(
                 color = Color.Black,
                 start = Offset(0f, 0f),
-                end = Offset(size.height, 0f),
+                end = Offset(0f, size.height),
                 strokeWidth = bigGridLine_vertical.toPx()
             )
+
 
         },
         contentAlignment = Alignment.Center
