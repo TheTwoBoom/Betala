@@ -61,6 +61,7 @@ fun HomeScreen(navController: NavController){
         uri?.let { nonNullUri ->
             try {
                 GameManager.parseSudokuFile(context, nonNullUri)
+                navController.navigate(AppAdditionalDestinations.SUDOKU.route)
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error parsing file", e)
             }

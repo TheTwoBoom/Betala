@@ -1,6 +1,5 @@
 package app.myhtl.betala.screens
 
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Scaffold
@@ -91,7 +89,6 @@ fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>){
         columns = GridCells.Fixed(row_count)
     ){
         items(cells) { value ->
-
             SudokuCell(value)
         }
     }
