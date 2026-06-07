@@ -97,6 +97,14 @@ fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>){
 
 @Composable
 fun SudokuCell(value: Int){
+    var text = ""
+    if (value == 0) {
+        text = ""
+    } else {
+        text = value.toString()
+    }
+
+
     val column = value/9
     val row = value%9
 
@@ -125,6 +133,6 @@ fun SudokuCell(value: Int){
         },
         contentAlignment = Alignment.Center
     ){
-        Text(value.toString())
+        Text(text)
     }
 }
