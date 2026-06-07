@@ -1,5 +1,7 @@
 package app.myhtl.betala.screens
 
+import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -11,33 +13,49 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.opensudoku.GameManager
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadResult
+import kotlinx.coroutines.launch
 
 @Composable
 fun SudokuScreen(navController: NavController, sudokugame: GameManager.SudokuGame){
-    var row_count = 9
-    var cells = sudokugame.data
-    var column_count = 9
+    val rowCount = 9
+    val columnCount = 9
+    val cells = sudokugame.data
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(Modifier
@@ -46,8 +64,42 @@ fun SudokuScreen(navController: NavController, sudokugame: GameManager.SudokuGam
             horizontalAlignment = Alignment.CenterHorizontally) {
 
             TopRow(navController)
-            CreateSudoku(Modifier.padding(top = 20.dp),row_count, cells)
+            CreateSudoku(Modifier.padding(top = 20.dp),rowCount, cells)
 
+        }
+
+        var bannerAdState by remember { mutableStateOf<BannerAd?>(null) }
+        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
+            bannerAdState?.let { bannerAd ->
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    AndroidView(
+                        modifier = Modifier.wrapContentSize(),
+                        factory = { ctx ->
+                            activity?.let { bannerAd.getView(it) } ?: android.view.View(ctx)
+                        },
+                    )
+                }
+            }
+        }
+        val adSize = AdSize.MEDIUM_RECTANGLE
+
+        // Load the ad when the screen is active.
+        val coroutineScope = rememberCoroutineScope()
+        val isPreviewMode = LocalInspectionMode.current
+        LaunchedEffect(context) {
+            bannerAdState?.destroy()
+            if (!isPreviewMode) {
+                coroutineScope.launch {
+                    when (val result = BannerAd.load(BannerAdRequest.Builder("ca-app-pub-3940256099942544/9214589741", adSize).build())) {
+                        is AdLoadResult.Success -> {
+                            bannerAdState = result.ad
+                        }
+                        is AdLoadResult.Failure -> {
+                            Log.e(null, "Banner ad failed to load: $result.error.message")
+                        }
+                    }
+                }
+            }
         }
     }
 

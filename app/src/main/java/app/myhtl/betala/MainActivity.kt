@@ -98,7 +98,7 @@ fun BetalaApp() {
                     },
                     selected = currentDestination?.hierarchy?.any { it.route == destinations.route } == true,
                     onClick = {
-                        navController.navigate(destinations.route){
+                        navController.navigate(destinations.route) {
                             //Zurück-Button verweist immer auf StartDestination, also Home
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
@@ -110,7 +110,7 @@ fun BetalaApp() {
                 )
             }
         },
-        layoutType = if(windowSizeClass.minWidthDp >= 840 || isLandscape){
+        layoutType = if (windowSizeClass.minWidthDp >= 840 || isLandscape) {
             NavigationSuiteType.NavigationRail
         } else {
             NavigationSuiteType.ShortNavigationBarCompact
