@@ -102,7 +102,7 @@ fun HomeScreen(navController: NavController){
             Button(
                 modifier = Modifier.padding(horizontal = 50.dp, vertical = 10.dp),
                 onClick = {
-                    navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                   // navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {

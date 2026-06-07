@@ -24,8 +24,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.ui.theme.BetalaTheme
 import app.myhtl.betala.screens.FavoriteScreen
 import app.myhtl.betala.screens.HomeScreen
@@ -113,6 +116,8 @@ fun BetalaApp() {
             NavigationSuiteType.ShortNavigationBarCompact
         }
     ) {
+        val sudokuViewModel: SudokuViewModel = viewModel() // ViewModel initialisieren
+
         NavHost(
             navController = navController,
             startDestination = AppDestinations.HOME.route
@@ -127,13 +132,15 @@ fun BetalaApp() {
                 FavoriteScreen(navController)
             }
             composable(AppAdditionalDestinations.SUDOKU.route) {
-                SudokuScreen(navController)
-            }
-
+                SudokuScreen(navController, sudokuViewModel.currentGame!!)            }
         }
 
     }
 
+}
+
+class SudokuViewModel : ViewModel() {
+    var currentGame: GameManager.SudokuGame? = null
 }
 
 enum class AppDestinations(
