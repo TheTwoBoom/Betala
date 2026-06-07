@@ -6,10 +6,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.myhtl.betala.ui.theme.BetalaTheme
+import app.myhtl.betala.R
 
 @Composable
 fun MainHeader(modifier: Modifier = Modifier) {
@@ -37,7 +39,7 @@ fun Header(modifier: Modifier = Modifier, text:String) {
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
     Text(
-        text = "Welcome to Betala - Sudoku Variants!",
+        text = stringResource(R.string.greeting),
         color = MaterialTheme.colorScheme.secondary,
         fontSize = 20.sp,
         modifier = modifier.padding(10.dp),

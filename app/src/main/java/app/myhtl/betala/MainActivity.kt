@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import app.myhtl.betala.ui.theme.BetalaTheme
@@ -68,12 +69,12 @@ fun BetalaApp() {
                     icon = {
                         Icon(
                             painterResource(destinations.icon),
-                            contentDescription = destinations.label,
+                            contentDescription = stringResource(destinations.labelRes),
                             modifier = Modifier.size(32.dp)
                         )
                     },
                     label = {
-                        Text(text = destinations.label)
+                        Text(text = stringResource(destinations.labelRes))
                     },
                     selected = currentDestination?.hierarchy?.any { it.route == destinations.route } == true,
                     onClick = {
@@ -122,14 +123,14 @@ fun BetalaApp() {
 }
 
 enum class AppDestinations(
-    val label: String,
+    val labelRes: Int,
     val icon: Int,
     val route: String
 ) {
 
-    FAVORITES("Favorites", R.drawable.ic_favorite, route = "favorites"),
-    HOME("Home", R.drawable.ic_home, route = "home"),
-    SETTINGS("Settings", R.drawable.outline_settings_24, route = "settings"),
+    FAVORITES(R.string.favorites, R.drawable.ic_favorite, route = "favorites"),
+    HOME(R.string.home, R.drawable.ic_home, route = "home"),
+    SETTINGS(R.string.settings, R.drawable.outline_settings_24, route = "settings"),
 }
 
 enum class AppAdditionalDestinations(
