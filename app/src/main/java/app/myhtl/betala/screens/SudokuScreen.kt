@@ -4,6 +4,7 @@ import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -160,13 +161,17 @@ fun SudokuCell(value: Int, i: Int){
 
     val column = i/9
     val row = i%9
-    println(row)
-    println(column)
-    val bigGridLine_vertical = if (column%3 == 0) 5.dp else 1.dp
-    val bigGridLine_horizontal = if(row%3 == 0) 5.dp else 1.dp
+
+    val bigGridLine_vertical = if (row%3 == 0) 5.dp else 1.dp
+    val bigGridLine_horizontal = if(column%3 == 0) 5.dp else 1.dp
 
     Box(modifier = Modifier
         .aspectRatio(1f)
+        .clickable {
+            //hier weitermachen für Zahlen einsetzten in Kästchen
+            print(row+1)
+            println(column+1)
+        }
         .drawBehind {
             drawLine(
                 color = Color.Black,
