@@ -35,15 +35,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.navigation.NavController
 import app.myhtl.betala.AppAdditionalDestinations
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContentProviderCompat.requireContext
 import app.myhtl.betala.R
 import app.myhtl.betala.opensudoku.GameManager
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize

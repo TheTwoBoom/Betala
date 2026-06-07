@@ -9,10 +9,12 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 
 object GameManager {
-    data class SudokuGame(val data: Array<IntArray>) {
+    data class SudokuGame(val data: MutableList<Int>) {
+        private fun index(x: Int, y: Int): Int = y * 9 + x
+
         fun changeValue(x: Int, y: Int, value: Int) {
             if (x in 0..8 && y in 0..8 && value in 1..9) {
-                data[y][x] = value
+                data[index(x, y)] = value
             }
         }
         fun checkCorrect(): Boolean {
@@ -20,7 +22,7 @@ object GameManager {
             for (i in 0..8) {
                 val seen = BooleanArray(9)
                 for (j in 0..8) {
-                    val value = data[i][j]
+                    val value = data[index(j, i)]
                     if (value != 0) {
                         if (seen[value - 1]) return false
                         seen[value - 1] = true
@@ -31,7 +33,7 @@ object GameManager {
             for (j in 0..8) {
                 val seen = BooleanArray(9)
                 for (i in 0..8) {
-                    val value = data[i][j]
+                    val value = data[index(j, i)]
                     if (value != 0) {
                         if (seen[value - 1]) return false
                         seen[value - 1] = true
@@ -44,7 +46,7 @@ object GameManager {
                     val seen = BooleanArray(9)
                     for (i in 0..2) {
                         for (j in 0..2) {
-                            val value = data[boxRow * 3 + i][boxCol * 3 + j]
+                            val value = data[index(boxCol * 3 + j, boxRow * 3 + i)]
                             if (value != 0) {
                                 if (seen[value - 1]) return false
                                 seen[value - 1] = true
@@ -61,12 +63,12 @@ object GameManager {
 
             other as SudokuGame
 
-            if (!data.contentDeepEquals(other.data)) return false
+            if (data != other.data) return false
 
             return true
         }
         override fun hashCode(): Int {
-            return data.contentDeepHashCode()
+            return data.hashCode()
         }
     }
 
@@ -116,12 +118,13 @@ object GameManager {
                             val data = parser.getAttributeValue(null, "data")
                             try {
                                 val gameChars = data.toCharArray()
-                                val gameArray: Array<IntArray> = Array(9, init = {return@Array IntArray(9)})
+                                val gameList = MutableList(81) { 0 }
                                 for (x in 0..8) {
                                     for (y in 0..8) {
-                                        gameArray[x][y] = gameChars[x * 9 + y] - '0'
+                                        gameList[x * 9 + y] = gameChars[x * 9 + y] - '0'
                                     }
                                 }
+                                games.add(SudokuGame(gameList))
                             } catch (_: Exception) {
                                 return null
                             }
