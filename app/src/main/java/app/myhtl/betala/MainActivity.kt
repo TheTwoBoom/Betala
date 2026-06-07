@@ -32,6 +32,11 @@ import app.myhtl.betala.screens.FavoriteScreen
 import app.myhtl.betala.screens.HomeScreen
 import app.myhtl.betala.screens.SettingsScreen
 import app.myhtl.betala.screens.SudokuScreen
+import com.google.android.libraries.ads.mobile.sdk.MobileAds
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +46,19 @@ class MainActivity : ComponentActivity() {
             BetalaTheme {
                 BetalaApp()
             }
+        }
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            // Initialize GMA Next-Gen SDK on a background thread.
+            MobileAds.initialize(
+                this@MainActivity,
+                InitializationConfig.Builder("ca-app-pub-3940256099942544~3347511713").build()
+            ) {
+                // Adapter initialization is complete.
+            }
+            // SDK initialization is complete. If you don't want to wait for bidding adapters to finish
+            // initializing, start loading ads now.
+            println(MobileAds.getInitializationStatus())
         }
     }
 }
@@ -96,9 +114,6 @@ fun BetalaApp() {
             NavigationSuiteType.ShortNavigationBarCompact
         }
     ) {
-
-
-
         NavHost(
             navController = navController,
             startDestination = AppDestinations.HOME.route
