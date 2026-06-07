@@ -42,6 +42,7 @@ import app.myhtl.betala.AppAdditionalDestinations
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.R
+import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GameManager
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
@@ -51,14 +52,22 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("ContextCastToActivity")
 @Composable
-fun HomeScreen(navController: NavController){
+fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
     val context = LocalContext.current
     val activity = context as? Activity
     val getContent = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         uri?.let { nonNullUri ->
             try {
-                GameManager.parseSudokuFile(context, nonNullUri)
-                navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                // 1. Spiel laden
+                val openSudoku = GameManager.parseSudokuFile(context, nonNullUri)
+
+                // 2. Das erste Spiel aus der Datei im ViewModel speichern
+                if (openSudoku != null && openSudoku.games.isNotEmpty()) {
+                    sudokuViewModel.currentGame = openSudoku.games[0]
+
+                    // 3. Erst jetzt navigieren
+                    navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                }
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error parsing file", e)
             }

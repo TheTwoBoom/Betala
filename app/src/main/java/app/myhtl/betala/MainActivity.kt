@@ -123,7 +123,7 @@ fun BetalaApp() {
             startDestination = AppDestinations.HOME.route
         ) {
             composable(AppDestinations.HOME.route) {
-                HomeScreen(navController)
+                HomeScreen(navController, sudokuViewModel)
             }
             composable(AppDestinations.SETTINGS.route) {
                 SettingsScreen(navController)
