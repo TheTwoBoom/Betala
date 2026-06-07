@@ -30,11 +30,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
+import app.myhtl.betala.opensudoku.GameManager
 
 @Composable
-fun SudokuScreen(navController: NavController){
+fun SudokuScreen(navController: NavController, sudokugame: GameManager.SudokuGame){
     var row_count = 9
-    var cells = List(81){1}
+    var cells = sudokugame.data
     var column_count = 9
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
