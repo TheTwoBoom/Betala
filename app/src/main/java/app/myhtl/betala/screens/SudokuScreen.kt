@@ -1,7 +1,9 @@
 package app.myhtl.betala.screens
 
+import ads_mobile_sdk.pr
 import android.app.Activity
 import android.util.Log
+import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,16 +14,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
+import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GameManager
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
@@ -51,7 +62,8 @@ import com.google.android.libraries.ads.mobile.sdk.common.AdLoadResult
 import kotlinx.coroutines.launch
 
 @Composable
-fun SudokuScreen(navController: NavController, sudokugame: GameManager.SudokuGame){
+fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
+    val sudokugame = sudokuViewModel.currentGame?: return
     val rowCount = 9
     val columnCount = 9
     val cells = sudokugame.data
@@ -65,18 +77,25 @@ fun SudokuScreen(navController: NavController, sudokugame: GameManager.SudokuGam
             horizontalAlignment = Alignment.CenterHorizontally) {
 
             TopRow(navController)
-            CreateSudoku(Modifier.padding(top = 20.dp),rowCount, cells)
+            CreateSudoku(Modifier.padding(top = 20.dp),rowCount, cells, setIndex = {clickedIndex -> sudokuViewModel.setIndex(clickedIndex)})
+            NumRow(
+                modifier = Modifier.padding(top = 20.dp),
+                numbers = sudokugame.getNumSet(),
+                onNumberClick = { number ->
+                    sudokuViewModel.onNumberSelected(number)
+                }
+                )
 
         }
 
-        var bannerAdState by remember { mutableStateOf<BannerAd?>(null) }
+       /* var bannerAdState by remember { mutableStateOf<BannerAd?>(null) }
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
             bannerAdState?.let { bannerAd ->
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     AndroidView(
                         modifier = Modifier.wrapContentSize(),
                         factory = { ctx ->
-                            activity?.let { bannerAd.getView(it) } ?: android.view.View(ctx)
+                            activity?.let { bannerAd.getView(it) } ?: View(ctx)
                         },
                     )
                 }
@@ -101,7 +120,7 @@ fun SudokuScreen(navController: NavController, sudokugame: GameManager.SudokuGam
                     }
                 }
             }
-        }
+        }*/
     }
 
 }
@@ -135,7 +154,7 @@ fun TopRow(navController: NavController){
 }
 
 @Composable
-fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>){
+fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, setIndex: (Int) -> Unit){
     LazyVerticalGrid(
         modifier = modifier
             .padding(10.dp)
@@ -144,13 +163,13 @@ fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>){
         columns = GridCells.Fixed(row_count)
     ){
         itemsIndexed(cells) {index, value ->
-            SudokuCell(value, index)
+            SudokuCell(value, index, setIndex = setIndex)
         }
     }
 }
 
 @Composable
-fun SudokuCell(value: Int, i: Int){
+fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit){
     var text: String
     if (value == 0) {
         text = ""
@@ -168,9 +187,8 @@ fun SudokuCell(value: Int, i: Int){
     Box(modifier = Modifier
         .aspectRatio(1f)
         .clickable {
-            //hier weitermachen für Zahlen einsetzten in Kästchen
-            print(row+1)
-            println(column+1)
+            Log.d("Sudoku", "TEST")
+            setIndex(i)
         }
         .drawBehind {
             drawLine(
@@ -191,5 +209,31 @@ fun SudokuCell(value: Int, i: Int){
         contentAlignment = Alignment.Center
     ){
         Text(text)
+    }
+}
+
+@Composable
+fun NumRow(modifier: Modifier, numbers: List<Int>, onNumberClick: (Int) -> Unit){
+
+    LazyRow(
+        modifier = modifier
+            .padding(10.dp)
+            .background(MaterialTheme.colorScheme.primary)
+            .border(width = 4.dp, color = MaterialTheme.colorScheme.primary)
+            .wrapContentWidth()
+            .height(40.dp),
+    ) {
+        items(numbers) { value ->
+            Box(
+                modifier = Modifier
+                .aspectRatio(1f)
+                .clickable {
+                    Log.d("Numbers", "TEST")
+                    onNumberClick(value)
+                },contentAlignment = Alignment.Center
+            ){
+                Text(value.toString())
+            }
+        }
     }
 }

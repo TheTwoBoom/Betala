@@ -15,6 +15,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
@@ -117,7 +119,7 @@ fun BetalaApp() {
             NavigationSuiteType.ShortNavigationBarCompact
         }
     ) {
-        val sudokuViewModel: SudokuViewModel = viewModel() // ViewModel initialisieren
+        val sudokuViewModel: SudokuViewModel = viewModel()
 
         NavHost(
             navController = navController,
@@ -133,7 +135,7 @@ fun BetalaApp() {
                 FavoriteScreen(navController)
             }
             composable(AppAdditionalDestinations.SUDOKU.route) {
-                SudokuScreen(navController, sudokuViewModel.currentGame!!)            }
+                SudokuScreen(navController, sudokuViewModel)            }
         }
 
     }
@@ -141,7 +143,19 @@ fun BetalaApp() {
 }
 
 class SudokuViewModel : ViewModel() {
-    var currentGame: GameManager.SudokuGame? = null
+    var selectedIndex by mutableStateOf(0)
+    var currentGame by mutableStateOf<GameManager.SudokuGame?>(null)
+
+    fun setIndex(index: Int){
+        selectedIndex = index
+    }
+
+    fun onNumberSelected(number: Int){
+
+        if(selectedIndex != null && number != null){
+            currentGame?.changeValue(selectedIndex,number)
+        }
+    }
 }
 
 enum class AppDestinations(

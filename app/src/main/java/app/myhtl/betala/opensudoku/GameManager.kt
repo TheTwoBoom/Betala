@@ -3,6 +3,7 @@ package app.myhtl.betala.opensudoku
 import android.content.Context
 import android.net.Uri
 import android.util.Xml
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import app.myhtl.betala.utils.readTextFromUri
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
@@ -10,7 +11,7 @@ import java.io.InputStream
 import kotlin.math.sqrt
 
 object GameManager {
-    data class SudokuGame(val data: MutableList<Int>) {
+    data class SudokuGame(val data: SnapshotStateList<Int>) {
         public fun size(): Int = sqrt(data.size.toDouble()).toInt()
         public fun index(x: Int, y: Int): Int = y * size() + x
 
@@ -121,7 +122,7 @@ object GameManager {
                             val data = parser.getAttributeValue(null, "data")
                             try {
                                 val gameChars = data.toCharArray()
-                                val gameList = MutableList(81) { 0 }
+                                val gameList = SnapshotStateList(81) { 0 }
                                 for (x in 0..8) {
                                     for (y in 0..8) {
                                         gameList[x * 9 + y] = gameChars[x * 9 + y] - '0'
