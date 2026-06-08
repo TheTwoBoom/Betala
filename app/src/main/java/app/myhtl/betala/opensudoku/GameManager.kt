@@ -14,10 +14,8 @@ object GameManager {
         public fun size(): Int = sqrt(data.size.toDouble()).toInt()
         public fun index(x: Int, y: Int): Int = y * size() + x
 
-        fun changeValue(x: Int, y: Int, value: Int) {
-            if (x in 0..8 && y in 0..8 && value in 1..9) {
-                data[index(x, y)] = value
-            }
+        fun changeValue(index: Int, value: Int) {
+            data[index] = value
         }
         fun checkCorrect(): Boolean {
             // Check rows
