@@ -13,6 +13,7 @@ import androidx.navigation.NavController
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,7 +23,8 @@ import app.myhtl.betala.R
 @Composable
 fun SettingsScreen(navController: NavController){
 
-    var sudokus = listOf("Setting1" ,"Setting2", "Setting3", "Setting4", "Setting5") // Später richtig implementieren
+    val settings = listOf("Setting1" ,"Setting2", "Setting3", "Setting4", "Setting5") // Später richtig implementieren
+    val context = LocalContext.current
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -38,20 +40,15 @@ fun SettingsScreen(navController: NavController){
                 horizontalAlignment = Alignment.CenterHorizontally,
                 contentPadding = PaddingValues(15.dp)
             ){
-                items(sudokus) { sudokuName ->
+                items(settings) { settingName ->
                     Text(
-                        text = sudokuName,
+                        text = settingName,
                         modifier = Modifier.padding(8.dp),
                         fontSize = 18.sp
                     )
                 }
             }
-
-            Button(onClick = {
-                navController.popBackStack()
-            }) {
-                Text("Back")
-            }
+            Donate(context)
         }
 
 
