@@ -57,6 +57,9 @@ object GameManager {
             }
             return true
         }
+        fun getNumSet(): List<Int> {
+            return listOf(1,2,3,4,5,6,7,8,9)
+        }
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
