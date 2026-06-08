@@ -7,10 +7,12 @@ import app.myhtl.betala.utils.readTextFromUri
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import kotlin.math.sqrt
 
 object GameManager {
     data class SudokuGame(val data: MutableList<Int>) {
-        private fun index(x: Int, y: Int): Int = y * 9 + x
+        public fun size(): Int = sqrt(data.size.toDouble()).toInt()
+        public fun index(x: Int, y: Int): Int = y * size() + x
 
         fun changeValue(x: Int, y: Int, value: Int) {
             if (x in 0..8 && y in 0..8 && value in 1..9) {
@@ -58,7 +60,7 @@ object GameManager {
             return true
         }
         fun getNumSet(): List<Int> {
-            return listOf(1,2,3,4,5,6,7,8,9)
+            return (1..size()).toList()
         }
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
