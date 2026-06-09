@@ -11,21 +11,26 @@ import java.io.InputStream
 import kotlin.math.sqrt
 
 object GameManager {
-    data class SudokuGame(val data: SnapshotStateList<Int>) {
+    data class SudokuGame(
+        val data: SnapshotStateList<Int>,
+        val changed: MutableList<Int> = MutableList(data.size) {0}
+    ) {
         public fun size(): Int = sqrt(data.size.toDouble()).toInt()
         public fun index(x: Int, y: Int): Int = y * size() + x
 
         fun changeValue(index: Int, value: Int) {
+            changed[index] = value
             data[index] = value
         }
-        fun checkCorrect(): Boolean {
+        fun checkCorrect(): List<Int> {
+            val falseList: MutableList<Int> = MutableList(data.size) {0}
             // Check rows
             for (i in 0..8) {
                 val seen = BooleanArray(9)
                 for (j in 0..8) {
                     val value = data[index(j, i)]
                     if (value != 0) {
-                        if (seen[value - 1]) return false
+                        if (seen[value - 1]) falseList[index(j, i)] = value
                         seen[value - 1] = true
                     }
                 }
@@ -36,7 +41,7 @@ object GameManager {
                 for (i in 0..8) {
                     val value = data[index(j, i)]
                     if (value != 0) {
-                        if (seen[value - 1]) return false
+                        if (seen[value - 1]) falseList[index(j, i)] = value
                         seen[value - 1] = true
                     }
                 }
@@ -49,14 +54,23 @@ object GameManager {
                         for (j in 0..2) {
                             val value = data[index(boxCol * 3 + j, boxRow * 3 + i)]
                             if (value != 0) {
-                                if (seen[value - 1]) return false
+                                if (seen[value - 1]) falseList[index(j, i)] = value
                                 seen[value - 1] = true
                             }
                         }
                     }
                 }
             }
-            return true
+            return falseList
+        }
+        fun getOriginal(): List<Int> {
+            val originalList: MutableList<Int> = data.toMutableList()
+            for (i in 0..data.size) {
+                if (changed[i] != 0) {
+                    originalList[i] = 0
+                }
+            }
+            return originalList
         }
         fun getNumSet(): List<Int> {
             return (1..size()).toList()
