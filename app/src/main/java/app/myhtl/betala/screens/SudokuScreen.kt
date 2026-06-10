@@ -1,6 +1,7 @@
 package app.myhtl.betala.screens
 
 import ads_mobile_sdk.pr
+import android.R.attr.maxWidth
 import android.app.Activity
 import android.util.Log
 import android.view.View
@@ -9,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -48,10 +50,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GameManager
@@ -77,7 +81,7 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
             horizontalAlignment = Alignment.CenterHorizontally) {
 
             TopRow(navController)
-            CreateSudoku(Modifier.padding(top = 20.dp),rowCount, cells, setIndex = {clickedIndex -> sudokuViewModel.setIndex(clickedIndex)})
+            CreateSudoku(Modifier.padding(top = 20.dp),rowCount, cells, setIndex = {clickedIndex -> sudokuViewModel.setIndex(clickedIndex)}, sudokuViewModel.selectedIndex)
             NumRow(
                 modifier = Modifier.padding(top = 20.dp),
                 numbers = sudokugame.getNumSet(),
@@ -154,22 +158,37 @@ fun TopRow(navController: NavController){
 }
 
 @Composable
-fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, setIndex: (Int) -> Unit){
+fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, setIndex: (Int) -> Unit, selectedCell: Int){
     LazyVerticalGrid(
         modifier = modifier
             .padding(10.dp)
-            .background(MaterialTheme.colorScheme.primary)
-            .border(width = 4.dp, color = MaterialTheme.colorScheme.primary),
+            .border(width = 4.dp, color = MaterialTheme.colorScheme.primary)
+        ,
         columns = GridCells.Fixed(row_count)
     ){
         itemsIndexed(cells) {index, value ->
-            SudokuCell(value, index, setIndex = setIndex)
+            var color = CalcColor(selectedCell, index)
+            SudokuCell(value, index, setIndex = setIndex, color = color)
         }
     }
 }
 
 @Composable
-fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit){
+fun CalcColor(selectedCell: Int, index: Int): Color{
+    if (selectedCell == index) return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+    else if(selectedCell/9 == index/9 || selectedCell%9 == index%9){
+        return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.25f)
+    }
+    else if (((index/9)/3 == (selectedCell/9)/3) && (index%9)/3 == (selectedCell%9)/3){
+        return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.25f)
+    }
+    else{
+        return MaterialTheme.colorScheme.surface
+    }
+}
+
+@Composable
+fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color){
     var text: String
     if (value == 0) {
         text = ""
@@ -181,34 +200,44 @@ fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit){
     val column = i/9
     val row = i%9
 
-    val bigGridLine_vertical = if (row%3 == 0) 5.dp else 1.dp
-    val bigGridLine_horizontal = if(column%3 == 0) 5.dp else 1.dp
+    val bigGridLine_vertical = if(row == 0) 0.dp else if (row%3 == 0) 4.dp else 1.dp
+    val bigGridLine_horizontal = if(column == 0) 0.dp else if(column%3 == 0) 4.dp else 1.dp
 
-    Box(modifier = Modifier
+    val bigGridLine_color = MaterialTheme.colorScheme.primary
+
+
+    BoxWithConstraints(modifier = Modifier
+        .background(color = color)
         .aspectRatio(1f)
         .clickable {
             Log.d("Sudoku", "TEST")
             setIndex(i)
         }
         .drawBehind {
-            drawLine(
-                color = Color.Black,
-                start = Offset(0f, 0f),
-                end = Offset(size.width, 0f),
-                strokeWidth = bigGridLine_horizontal.toPx()
-            )
-            drawLine(
-                color = Color.Black,
-                start = Offset(0f, 0f),
-                end = Offset(0f, size.height),
-                strokeWidth = bigGridLine_vertical.toPx()
-            )
-
+            if(bigGridLine_horizontal>0.dp) {
+                drawLine(
+                    color = bigGridLine_color,
+                    start = Offset(0f, 0f),
+                    end = Offset(size.width, 0f),
+                    strokeWidth = bigGridLine_horizontal.toPx()
+                )
+            }
+            if(bigGridLine_vertical>0.dp) {
+                drawLine(
+                    color = bigGridLine_color,
+                    start = Offset(0f, 0f),
+                    end = Offset(0f, size.height),
+                    strokeWidth = bigGridLine_vertical.toPx()
+                )
+            }
 
         },
         contentAlignment = Alignment.Center
     ){
-        Text(text)
+        val fontSize = with(LocalDensity.current) {
+            (maxWidth * 0.6f).toSp()
+        }
+        Text(text = text, fontSize = fontSize)
     }
 }
 
@@ -221,9 +250,10 @@ fun NumRow(modifier: Modifier, numbers: List<Int>, onNumberClick: (Int) -> Unit)
             .background(MaterialTheme.colorScheme.primary)
             .border(width = 4.dp, color = MaterialTheme.colorScheme.primary)
             .wrapContentWidth()
-            .height(40.dp),
+            .height(35.dp),
     ) {
         items(numbers) { value ->
+
             Box(
                 modifier = Modifier
                 .aspectRatio(1f)

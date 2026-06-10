@@ -155,6 +155,13 @@ class SudokuViewModel : ViewModel() {
         if(selectedIndex != null && number != null){
             currentGame?.changeValue(selectedIndex,number)
         }
+        validateSudoku()
+    }
+
+    fun validateSudoku(){
+       // if (!(currentGame?.checkCorrect() ?: true)){
+
+       // }
     }
 }
 
