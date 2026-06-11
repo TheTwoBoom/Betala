@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -70,16 +72,24 @@ import kotlinx.coroutines.launch
 data class SudokuActions(
     val setIndex: (Int) -> Unit,
     val onNumberSelected: (Int) -> Unit,
+    val toggleNoteMode: () -> Unit,
     val validate: (Int) -> Boolean,
-    val isEditable: (Int) -> Boolean
+    val isEditable: (Int) -> Boolean,
+    val sameValue: (Int) -> Boolean,
+    val isNoteMode: Boolean,
+    val erase: () -> Unit
 )
 @Composable
 fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
     val actions = SudokuActions(
         setIndex = {sudokuViewModel.setIndex(it)},
         onNumberSelected = {sudokuViewModel.onNumberSelected(it)},
+        toggleNoteMode = {sudokuViewModel.toggleNoteMode()},
         validate = {sudokuViewModel.validateSudoku(it)},
-        isEditable = {sudokuViewModel.isEditable(it)}
+        isEditable = {sudokuViewModel.isEditable(it)},
+        sameValue = {sudokuViewModel.sameValue(it)},
+        isNoteMode = sudokuViewModel.isNoteMode,
+        erase = {sudokuViewModel.eraseCell()}
     )
 
 
@@ -105,12 +115,14 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
             NumRow(
                 modifier = Modifier.padding(top = 20.dp),
                 numbers = sudokugame.getNumSet(),
-                onNumberClick = { number ->
-                    //sudokuViewModel.onNumberSelected(number)
-                    actions.onNumberSelected(number)
-
-                }
-                )
+                onNumberClick = { number -> actions.onNumberSelected(number) }
+            )
+            SudokuToolBar(Modifier.padding(top = 10.dp), actions)
+            /*NotesNumRow(
+                modifier = Modifier.padding(top = 20.dp),
+                numbers = sudokugame.getNumSet(),
+                onNoteNumberSelected = { number -> actions.onNoteNumberSelected(number)}
+                )*/
 
         }
 
@@ -184,7 +196,8 @@ fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, actions: S
     LazyVerticalGrid(
         modifier = modifier
             .padding(10.dp)
-            .border(width = 4.dp, color = MaterialTheme.colorScheme.primary)
+            .clip(RoundedCornerShape(8.dp))
+            .border(width = 4.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
         ,
         columns = GridCells.Fixed(row_count)
     ){
@@ -204,6 +217,10 @@ fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
     }
     //selected?
     if (selectedCell == index) return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+    //same number as selected?
+    else if(actions.sameValue(index)){
+        return MaterialTheme.colorScheme.tertiaryContainer
+    }
     //same row or column?
     else if(selectedCell/9 == index/9 || selectedCell%9 == index%9){
         return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.25f)
@@ -242,11 +259,10 @@ fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color, textCol
         .background(color = color)
         .aspectRatio(1f)
         .clickable {
-            Log.d("Sudoku", "TEST")
             setIndex(i)
         }
         .drawBehind {
-            if(bigGridLine_horizontal>0.dp) {
+            if (bigGridLine_horizontal > 0.dp) {
                 drawLine(
                     color = bigGridLine_color,
                     start = Offset(0f, 0f),
@@ -254,7 +270,7 @@ fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color, textCol
                     strokeWidth = bigGridLine_horizontal.toPx()
                 )
             }
-            if(bigGridLine_vertical>0.dp) {
+            if (bigGridLine_vertical > 0.dp) {
                 drawLine(
                     color = bigGridLine_color,
                     start = Offset(0f, 0f),
@@ -267,8 +283,8 @@ fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color, textCol
         contentAlignment = Alignment.Center
     ){
         val fontSize = with(LocalDensity.current) {
-            (maxWidth * 0.6f).toSp()
-        }
+        (maxWidth * 0.6f).toSp()
+    }
         Text(text = text, fontSize = fontSize, color = textColor)
     }
 }
@@ -276,26 +292,69 @@ fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color, textCol
 @Composable
 fun NumRow(modifier: Modifier, numbers: List<Int>, onNumberClick: (Int) -> Unit){
 
-    LazyRow(
+    Row(
         modifier = modifier
-            .padding(10.dp)
-            .background(MaterialTheme.colorScheme.primary)
-            .border(width = 4.dp, color = MaterialTheme.colorScheme.primary)
-            .wrapContentWidth()
-            .height(35.dp),
+            .fillMaxWidth(0.9f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(
+                width = 4.dp,
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(3.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        items(numbers) { value ->
+        numbers.forEach { value ->
 
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier
-                .aspectRatio(1f)
-                .clickable {
-                    Log.d("Numbers", "TEST")
-                    onNumberClick(value)
-                },contentAlignment = Alignment.Center
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .clickable {
+                        onNumberClick(value)
+                    },contentAlignment = Alignment.Center
             ){
-                Text(value.toString())
+                val fontSize = with(LocalDensity.current) {
+                    (maxWidth * 0.5f).toSp()
+                }
+                Text(value.toString(), fontSize = fontSize)
             }
+        }
+    }
+}
+
+@Composable
+fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
+    Row(modifier = modifier
+        .clip(RoundedCornerShape(12.dp))
+        .background(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(24.dp)),
+        verticalAlignment = Alignment.CenterVertically){
+        IconButton(
+            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer),
+            onClick = {
+                actions.toggleNoteMode()
+            }
+        ) {
+            Icon(
+
+                painter = if(actions.isNoteMode){
+                    painterResource(id = R.drawable.edit_24px)
+                } else {painterResource(id = R.drawable.edit_off_24px)},
+                contentDescription = "Notes"
+            )
+        }
+
+        IconButton(
+            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer),
+            onClick = {
+                actions.erase()
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ink_eraser_24px),
+                contentDescription = "Erase"
+            )
         }
     }
 }

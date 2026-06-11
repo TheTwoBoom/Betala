@@ -145,6 +145,7 @@ fun BetalaApp() {
 class SudokuViewModel : ViewModel() {
     var selectedIndex by mutableStateOf(0)
     var currentGame by mutableStateOf<GameManager.SudokuGame?>(null)
+    var isNoteMode by mutableStateOf(false)
 
     fun setIndex(index: Int){
             selectedIndex = index
@@ -152,9 +153,27 @@ class SudokuViewModel : ViewModel() {
 
     fun onNumberSelected(number: Int){
         //überprüft, ob die Zahl eine fix vorgegebene Zahl ist
+        if(!isNoteMode) {
             if (selectedIndex != null && number != null && currentGame?.getOriginal()[selectedIndex] == 0) {
                 currentGame?.changeValue(selectedIndex, number)
             }
+        } else {
+            if(currentGame?.data[selectedIndex] == 0 && isNoteMode){
+
+            }
+        }
+    }
+
+    fun toggleNoteMode(){
+        isNoteMode = !isNoteMode
+    }
+
+    fun eraseCell(){
+        onNumberSelected(0)
+    }
+
+    fun sameValue(index: Int): Boolean{
+        return currentGame?.data[index] != 0 && currentGame?.data[index] == currentGame?.data[selectedIndex]
     }
 
     fun isEditable(index: Int): Boolean{
