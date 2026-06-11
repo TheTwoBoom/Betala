@@ -65,7 +65,7 @@ object GameManager {
         }
         fun getOriginal(): List<Int> {
             val originalList: MutableList<Int> = data.toMutableList()
-            for (i in 0..data.size) {
+            for (i in 0 until data.size) {
                 if (changed[i] != 0) {
                     originalList[i] = 0
                 }

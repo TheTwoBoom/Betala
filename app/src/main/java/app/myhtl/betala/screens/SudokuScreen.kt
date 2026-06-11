@@ -3,6 +3,7 @@ package app.myhtl.betala.screens
 import ads_mobile_sdk.pr
 import android.R.attr.maxWidth
 import android.app.Activity
+import android.text.Editable
 import android.util.Log
 import android.view.View
 import androidx.compose.foundation.background
@@ -65,8 +66,23 @@ import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
 import com.google.android.libraries.ads.mobile.sdk.common.AdLoadResult
 import kotlinx.coroutines.launch
 
+
+data class SudokuActions(
+    val setIndex: (Int) -> Unit,
+    val onNumberSelected: (Int) -> Unit,
+    val validate: (Int) -> Boolean,
+    val isEditable: (Int) -> Boolean
+)
 @Composable
 fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
+    val actions = SudokuActions(
+        setIndex = {sudokuViewModel.setIndex(it)},
+        onNumberSelected = {sudokuViewModel.onNumberSelected(it)},
+        validate = {sudokuViewModel.validateSudoku(it)},
+        isEditable = {sudokuViewModel.isEditable(it)}
+    )
+
+
     val sudokugame = sudokuViewModel.currentGame?: return
     val rowCount = 9
     val columnCount = 9
@@ -81,12 +97,18 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
             horizontalAlignment = Alignment.CenterHorizontally) {
 
             TopRow(navController)
-            CreateSudoku(Modifier.padding(top = 20.dp),rowCount, cells, setIndex = {clickedIndex -> sudokuViewModel.setIndex(clickedIndex)}, sudokuViewModel.selectedIndex)
+            CreateSudoku(Modifier.padding(top = 20.dp),
+                rowCount,
+                cells,
+                actions = actions,
+                sudokuViewModel.selectedIndex)
             NumRow(
                 modifier = Modifier.padding(top = 20.dp),
                 numbers = sudokugame.getNumSet(),
                 onNumberClick = { number ->
-                    sudokuViewModel.onNumberSelected(number)
+                    //sudokuViewModel.onNumberSelected(number)
+                    actions.onNumberSelected(number)
+
                 }
                 )
 
@@ -158,7 +180,7 @@ fun TopRow(navController: NavController){
 }
 
 @Composable
-fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, setIndex: (Int) -> Unit, selectedCell: Int){
+fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, actions: SudokuActions, selectedCell: Int){
     LazyVerticalGrid(
         modifier = modifier
             .padding(10.dp)
@@ -167,28 +189,38 @@ fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, setIndex: 
         columns = GridCells.Fixed(row_count)
     ){
         itemsIndexed(cells) {index, value ->
-            var color = CalcColor(selectedCell, index)
-            SudokuCell(value, index, setIndex = setIndex, color = color)
+            val color = CalcColor(selectedCell, index, actions = actions)
+            val textColor = if(actions.isEditable(index)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+            SudokuCell(value, index, setIndex = actions.setIndex, color = color, textColor = textColor ) //textcolor = CalcTextColor)
         }
     }
 }
 
 @Composable
-fun CalcColor(selectedCell: Int, index: Int): Color{
+fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
+    //wrong number?
+    if(!actions.validate(index)){
+        return MaterialTheme.colorScheme.errorContainer
+    }
+    //selected?
     if (selectedCell == index) return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+    //same row or column?
     else if(selectedCell/9 == index/9 || selectedCell%9 == index%9){
         return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.25f)
     }
+    // Subgrid?
     else if (((index/9)/3 == (selectedCell/9)/3) && (index%9)/3 == (selectedCell%9)/3){
         return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.25f)
     }
+    //normal Cell
     else{
         return MaterialTheme.colorScheme.surface
     }
 }
 
+
 @Composable
-fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color){
+fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color, textColor: Color){
     var text: String
     if (value == 0) {
         text = ""
@@ -237,7 +269,7 @@ fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color){
         val fontSize = with(LocalDensity.current) {
             (maxWidth * 0.6f).toSp()
         }
-        Text(text = text, fontSize = fontSize)
+        Text(text = text, fontSize = fontSize, color = textColor)
     }
 }
 

@@ -147,21 +147,25 @@ class SudokuViewModel : ViewModel() {
     var currentGame by mutableStateOf<GameManager.SudokuGame?>(null)
 
     fun setIndex(index: Int){
-        selectedIndex = index
+            selectedIndex = index
     }
 
     fun onNumberSelected(number: Int){
-
-        if(selectedIndex != null && number != null){
-            currentGame?.changeValue(selectedIndex,number)
-        }
-        validateSudoku()
+        //überprüft, ob die Zahl eine fix vorgegebene Zahl ist
+            if (selectedIndex != null && number != null && currentGame?.getOriginal()[selectedIndex] == 0) {
+                currentGame?.changeValue(selectedIndex, number)
+            }
     }
 
-    fun validateSudoku(){
-       // if (!(currentGame?.checkCorrect() ?: true)){
+    fun isEditable(index: Int): Boolean{
+        return currentGame?.getOriginal()[index] == 0
 
-       // }
+    }
+
+    fun validateSudoku(index: Int): Boolean{
+        //wichtig: funktioniert noch nicht richtig, da checkCorrect anstatt wie jetzt live zu überprüfen, eigentlich mit einer fertigen gelösten Liste überprüfen sollte
+        if (currentGame?.data[index] == 0) return true
+        if(currentGame?.checkCorrect()[index] != 0) return false else return true
     }
 }
 
