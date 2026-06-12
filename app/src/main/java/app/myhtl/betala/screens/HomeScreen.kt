@@ -114,6 +114,7 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
             }
             Button(
                 onClick = {
+                    //navController.navigate(AppAdditionalDestinations.GALLERY.route)
                     getContent.launch(arrayOf("application/xml", "text/xml", "application/opensudoku"))
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
@@ -162,7 +163,7 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                             bannerAdState = result.ad
                         }
                         is AdLoadResult.Failure -> {
-                            var error: String = result.error.message
+                            val error: String = result.error.message
                             Log.e(null, "Banner ad failed to load: $error")
                         }
                     }

@@ -13,6 +13,8 @@
     <string name="greeting">Welcome to Betala - Sudoku Variants</string>
     <string name="donate_text">Enjoing the app? Consider donating to support development</string>
     <string name="favorites_header">Your favorite Sudokus</string>
+    <string name="store">Store</string>
+    <string name="gallery_header">Sudokus</string>
 
 
 </resources>

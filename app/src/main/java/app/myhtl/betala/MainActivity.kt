@@ -15,6 +15,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -31,9 +32,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GameManager
+import app.myhtl.betala.screens.Destination
 import app.myhtl.betala.ui.theme.BetalaTheme
-import app.myhtl.betala.screens.FavoriteScreen
+import app.myhtl.betala.screens.GalleryScreen
 import app.myhtl.betala.screens.HomeScreen
 import app.myhtl.betala.screens.SettingsScreen
 import app.myhtl.betala.screens.SudokuScreen
@@ -61,9 +64,6 @@ class MainActivity : ComponentActivity() {
             ) {
                 // Adapter initialization is complete.
             }
-            // SDK initialization is complete. If you don't want to wait for bidding adapters to finish
-            // initializing, start loading ads now.
-            println(MobileAds.getInitializationStatus())
         }
     }
 }
@@ -131,11 +131,15 @@ fun BetalaApp() {
             composable(AppDestinations.SETTINGS.route) {
                 SettingsScreen(navController)
             }
-            composable(AppDestinations.FAVORITES.route) {
-                FavoriteScreen(navController)
+            composable(AppDestinations.STORE.route) {
+                GalleryScreen(navController, Destination.ALL)
             }
             composable(AppAdditionalDestinations.SUDOKU.route) {
-                SudokuScreen(navController, sudokuViewModel)            }
+                SudokuScreen(navController, sudokuViewModel)
+            }
+            composable(AppAdditionalDestinations.GALLERY.route) {
+                GalleryScreen(navController, Destination.ALL)
+            }
         }
 
     }
@@ -143,12 +147,12 @@ fun BetalaApp() {
 }
 
 class SudokuViewModel : ViewModel() {
-    var selectedIndex by mutableStateOf(0)
+    var selectedIndex by mutableIntStateOf(0)
     var currentGame by mutableStateOf<GameManager.SudokuGame?>(null)
     var isNoteMode by mutableStateOf(false)
 
-    fun setIndex(index: Int){
-            selectedIndex = index
+    fun setIndex(index: Int) {
+        selectedIndex = index
     }
 
     fun onNumberSelected(number: Int){
@@ -194,7 +198,7 @@ enum class AppDestinations(
     val route: String
 ) {
 
-    FAVORITES(R.string.favorites, R.drawable.ic_favorite, route = "favorites"),
+    STORE(R.string.store, R.drawable.storefront_24px, route = "store"),
     HOME(R.string.home, R.drawable.ic_home, route = "home"),
     SETTINGS(R.string.settings, R.drawable.outline_settings_24, route = "settings"),
 }
@@ -205,4 +209,5 @@ enum class AppAdditionalDestinations(
 ) {
 
     SUDOKU("Sudoku_Screen", route = "sudoku_screen"),
+    GALLERY("Gallery_Screen", route = "gallery_screen"),
 }
