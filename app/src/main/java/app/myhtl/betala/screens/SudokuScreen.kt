@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
@@ -58,6 +59,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.SudokuViewModel
@@ -94,9 +97,10 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
 
 
     val sudokugame = sudokuViewModel.currentGame?: return
-    val rowCount = 9
+    val rowCount = sudokugame.getNumSet().size
     val columnCount = 9
     val cells = sudokugame.data
+    val cellNotes = sudokugame.noteData
     val context = LocalContext.current
     val activity = context as? Activity
 
@@ -108,8 +112,9 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
 
             TopRow(navController)
             CreateSudoku(Modifier.padding(top = 20.dp),
-                rowCount,
-                cells,
+                rowCount = rowCount,
+                cells = cells,
+                cellNotes = cellNotes,
                 actions = actions,
                 sudokuViewModel.selectedIndex)
             NumRow(
@@ -192,19 +197,19 @@ fun TopRow(navController: NavController){
 }
 
 @Composable
-fun CreateSudoku(modifier: Modifier,row_count: Int, cells: List<Int>, actions: SudokuActions, selectedCell: Int){
+fun CreateSudoku(modifier: Modifier, rowCount: Int, cells: List<Int>, cellNotes: List<BooleanArray>, actions: SudokuActions, selectedCell: Int){
     LazyVerticalGrid(
         modifier = modifier
             .padding(10.dp)
             .clip(RoundedCornerShape(8.dp))
             .border(width = 4.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
         ,
-        columns = GridCells.Fixed(row_count)
+        columns = GridCells.Fixed(rowCount)
     ){
         itemsIndexed(cells) {index, value ->
             val color = CalcColor(selectedCell, index, actions = actions)
             val textColor = if(actions.isEditable(index)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
-            SudokuCell(value, index, setIndex = actions.setIndex, color = color, textColor = textColor ) //textcolor = CalcTextColor)
+            SudokuCell(value = value,cellNotes = cellNotes[index], i = index, actions = actions, color = color, textColor = textColor ) //textcolor = CalcTextColor)
         }
     }
 }
@@ -237,29 +242,25 @@ fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
 
 
 @Composable
-fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color, textColor: Color){
-    var text: String
-    if (value == 0) {
-        text = ""
-    } else {
-        text = value.toString()
-    }
+fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActions, color:Color, textColor: Color) {
 
 
-    val column = i/9
-    val row = i%9
+    val column = i / 9
+    val row = i % 9
 
-    val bigGridLine_vertical = if(row == 0) 0.dp else if (row%3 == 0) 4.dp else 1.dp
-    val bigGridLine_horizontal = if(column == 0) 0.dp else if(column%3 == 0) 4.dp else 1.dp
+    val bigGridLine_vertical = if (row == 0) 0.dp else if (row % 3 == 0) 3.dp else 1.dp
+    val bigGridLine_horizontal = if (column == 0) 0.dp else if (column % 3 == 0) 3.dp else 1.dp
 
     val bigGridLine_color = MaterialTheme.colorScheme.primary
 
 
-    BoxWithConstraints(modifier = Modifier
+    BoxWithConstraints(
+        modifier = Modifier
+        .fillMaxSize()
         .background(color = color)
         .aspectRatio(1f)
         .clickable {
-            setIndex(i)
+            actions.setIndex(i)
         }
         .drawBehind {
             if (bigGridLine_horizontal > 0.dp) {
@@ -281,11 +282,43 @@ fun SudokuCell(value: Int, i: Int, setIndex: (Int) -> Unit, color:Color, textCol
 
         },
         contentAlignment = Alignment.Center
-    ){
-        val fontSize = with(LocalDensity.current) {
-        (maxWidth * 0.6f).toSp()
-    }
-        Text(text = text, fontSize = fontSize, color = textColor)
+    ) {
+        var fontSize = with(LocalDensity.current) {
+            (maxWidth * 0.6f).toSp()
+        }
+        var text = ""
+        if (value != 0) {
+            text = value.toString()
+            Text(
+                text = text,
+                fontSize = fontSize,
+                color = textColor,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            fontSize = with(LocalDensity.current) {
+                (maxWidth * 0.25f).toSp()
+            }
+            Box(modifier = Modifier.fillMaxSize().padding(2.dp)){
+            cellNotes.forEachIndexed {index, show ->
+                val textAlignments = arrayOf(Alignment.TopStart,Alignment.TopCenter,Alignment.TopEnd,Alignment.CenterStart,Alignment.Center,Alignment.CenterEnd,Alignment.BottomStart,Alignment.BottomCenter,Alignment.BottomEnd)
+                if (show){
+                    Text(text = (index+1).toString(),
+                        modifier = Modifier.fillMaxSize()
+                        .wrapContentSize(textAlignments[index]),
+                        fontSize = fontSize,
+                        style = LocalTextStyle.current.copy(
+                            lineHeight = fontSize,
+                            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+                        )
+                    )
+                }
+            }
+
+
+            }
+
+        }
     }
 }
 

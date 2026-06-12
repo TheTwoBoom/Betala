@@ -161,7 +161,8 @@ class SudokuViewModel : ViewModel() {
                 currentGame?.changeValue(selectedIndex, number)
             }
         } else {
-            if (currentGame?.data[selectedIndex] == 0 && isNoteMode){
+            if (isNoteMode){
+                currentGame?.toggleNote(selectedIndex, number)
             }
         }
     }
@@ -171,7 +172,8 @@ class SudokuViewModel : ViewModel() {
     }
 
     fun eraseCell(){
-        onNumberSelected(0)
+        currentGame?.clearData(selectedIndex)
+        currentGame?.clearNotes(selectedIndex)
     }
 
     fun sameValue(index: Int): Boolean{

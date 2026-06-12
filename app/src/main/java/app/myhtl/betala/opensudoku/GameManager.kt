@@ -28,12 +28,18 @@ object GameManager {
         }
         fun toggleNote(index: Int, value: Int) {
             if (data[index] == 0) {
-                noteData[index][value - 1] = !noteData[index][value - 1]
+                var noteArray: BooleanArray = noteData[index]
+                noteArray[value - 1] = !noteData[index][value - 1]
+                noteData[index] = noteArray.copyOf()
             }
         }
         fun clearNotes(index: Int) {
-            noteData[index] = BooleanArray(9)
+            noteData[index] = BooleanArray(9){false}
         }
+        fun clearData(index: Int) {
+            data[index] = 0
+        }
+
         fun checkCorrect(): List<Int> {
             val falseList: MutableList<Int> = MutableList(data.size) {0}
             // Check rows
