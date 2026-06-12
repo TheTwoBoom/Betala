@@ -22,9 +22,14 @@ object GameManager {
         fun changeValue(index: Int, value: Int) {
             changed[index] = value
             data[index] = value
+            if (value != 0) {
+                clearNotes(index)
+            }
         }
         fun toggleNote(index: Int, value: Int) {
-            noteData[index][value] = !noteData[index][value]
+            if (data[index] == 0) {
+                noteData[index][value - 1] = !noteData[index][value - 1]
+            }
         }
         fun clearNotes(index: Int) {
             noteData[index] = BooleanArray(9)
