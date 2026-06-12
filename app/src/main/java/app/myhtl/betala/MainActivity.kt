@@ -158,12 +158,12 @@ class SudokuViewModel : ViewModel() {
     fun onNumberSelected(number: Int){
         //überprüft, ob die Zahl eine fix vorgegebene Zahl ist
         if(!isNoteMode) {
-            if (selectedIndex != null && number != null && currentGame?.getOriginal()[selectedIndex] == 0) {
+            if (currentGame?.getOriginal()[selectedIndex] == 0) {
                 currentGame?.changeValue(selectedIndex, number)
             }
         } else {
-            if(currentGame?.data[selectedIndex] == 0 && isNoteMode){
-
+            if (currentGame?.data[selectedIndex] == 0 && isNoteMode){
+                //
             }
         }
     }
@@ -188,7 +188,7 @@ class SudokuViewModel : ViewModel() {
     fun validateSudoku(index: Int): Boolean{
         //wichtig: funktioniert noch nicht richtig, da checkCorrect anstatt wie jetzt live zu überprüfen, eigentlich mit einer fertigen gelösten Liste überprüfen sollte
         if (currentGame?.data[index] == 0) return true
-        if(currentGame?.checkCorrect()[index] != 0) return false else return true
+        return currentGame?.checkCorrect()[index] == 0
     }
 }
 
