@@ -162,7 +162,6 @@ class SudokuViewModel : ViewModel() {
             }
         } else {
             if (currentGame?.data[selectedIndex] == 0 && isNoteMode){
-                //
             }
         }
     }

@@ -11,6 +11,6 @@
     <string name="greeting">Wilkommen zu Betala - Sudoku Variants</string>
     <string name="donate_text">Magst du die App? Spende, um die Entwicklung zu unterstützen!</string>
     <string name="favorites_header">Deine Lieblings-Sudokus</string>
-    <string name="store">Store</string>
+    <string name="store">Laden</string>
     <string name="gallery_header">Sudokus</string>
 </resources>
