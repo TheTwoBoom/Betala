@@ -13,7 +13,8 @@ import kotlin.math.sqrt
 object GameManager {
     data class SudokuGame(
         val data: SnapshotStateList<Int>,
-        val changed: MutableList<Int> = MutableList(data.size) {0}
+        val changed: MutableList<Int> = MutableList(data.size) {0},
+        val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(9)}
     ) {
         public fun size(): Int = sqrt(data.size.toDouble()).toInt()
         public fun index(x: Int, y: Int): Int = y * size() + x
@@ -21,6 +22,12 @@ object GameManager {
         fun changeValue(index: Int, value: Int) {
             changed[index] = value
             data[index] = value
+        }
+        fun toggleNote(index: Int, value: Int) {
+            noteData[index][value] = !noteData[index][value]
+        }
+        fun clearNotes(index: Int) {
+            noteData[index] = BooleanArray(9)
         }
         fun checkCorrect(): List<Int> {
             val falseList: MutableList<Int> = MutableList(data.size) {0}
