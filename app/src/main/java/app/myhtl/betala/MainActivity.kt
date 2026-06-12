@@ -67,7 +67,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @SuppressLint("ContextCastToActivity")
 @PreviewScreenSizes
 @Composable
