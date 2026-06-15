@@ -63,6 +63,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GameManager
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
@@ -80,7 +81,8 @@ data class SudokuActions(
     val isEditable: (Int) -> Boolean,
     val sameValue: (Int) -> Boolean,
     val isNoteMode: Boolean,
-    val erase: () -> Unit
+    val erase: () -> Unit,
+    val isFinishedAndCorrect: Boolean
 )
 @Composable
 fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
@@ -92,9 +94,13 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         isEditable = {sudokuViewModel.isEditable(it)},
         sameValue = {sudokuViewModel.sameValue(it)},
         isNoteMode = sudokuViewModel.isNoteMode,
-        erase = {sudokuViewModel.eraseCell()}
+        erase = {sudokuViewModel.eraseCell()},
+        isFinishedAndCorrect = sudokuViewModel.IsFinishedAndCorrect
     )
 
+if(actions.isFinishedAndCorrect){
+    navController.navigate(AppAdditionalDestinations.WINSCREEN.route)
+}
 
     val sudokugame = sudokuViewModel.currentGame?: return
     val rowCount = sudokugame.getNumSet().size

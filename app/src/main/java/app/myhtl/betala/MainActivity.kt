@@ -40,6 +40,7 @@ import app.myhtl.betala.screens.GalleryScreen
 import app.myhtl.betala.screens.HomeScreen
 import app.myhtl.betala.screens.SettingsScreen
 import app.myhtl.betala.screens.SudokuScreen
+import app.myhtl.betala.screens.WinScreen
 import com.google.android.libraries.ads.mobile.sdk.MobileAds
 import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import kotlinx.coroutines.CoroutineScope
@@ -149,6 +150,7 @@ class SudokuViewModel : ViewModel() {
     var selectedIndex by mutableIntStateOf(0)
     var currentGame by mutableStateOf<GameManager.SudokuGame?>(null)
     var isNoteMode by mutableStateOf(false)
+    var IsFinishedAndCorrect by mutableStateOf(false)
 
     fun setIndex(index: Int) {
         selectedIndex = index
@@ -164,6 +166,8 @@ class SudokuViewModel : ViewModel() {
                 currentGame?.toggleNote(selectedIndex, number)
             }
         }
+
+        updateIsFinishedAndCorrect()
     }
 
     fun toggleNoteMode(){
@@ -189,6 +193,10 @@ class SudokuViewModel : ViewModel() {
         //wichtig: funktioniert noch nicht richtig, da checkCorrect anstatt wie jetzt live zu überprüfen, eigentlich mit einer fertigen gelösten Liste überprüfen sollte
         if (currentGame?.data[index] == 0) return true
         return currentGame?.checkCorrect()[index] == 0
+    }
+
+    fun updateIsFinishedAndCorrect(){
+        IsFinishedAndCorrect = currentGame?.isFullyCorrect == true
     }
 }
 

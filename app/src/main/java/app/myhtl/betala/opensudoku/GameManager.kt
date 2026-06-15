@@ -11,10 +11,13 @@ import java.io.InputStream
 import kotlin.math.sqrt
 
 object GameManager {
-    data class SudokuGame(
+    class SudokuGame(
         val data: SnapshotStateList<Int>,
         val changed: MutableList<Int> = MutableList(data.size) {0},
-        val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(9)}
+        val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(9)},
+        var isFullyFilled: Boolean = false,
+        var filledCells: Int = 0,
+        var isFullyCorrect: Boolean = true
     ) {
         public fun size(): Int = sqrt(data.size.toDouble()).toInt()
         public fun index(x: Int, y: Int): Int = y * size() + x
@@ -27,7 +30,24 @@ object GameManager {
                     clearNotes(index)
                 }
             }
+
+            updateAttributes()
         }
+
+        fun updateAttributes(){
+            data.forEach { value ->
+                if(value != 0) filledCells++
+            }
+            if(filledCells == getNumSet().size*3) isFullyFilled = true else isFullyFilled = false
+            if(isFullyFilled){
+                checkCorrect().forEach { value ->
+                    if(value != 0) isFullyCorrect = false
+                    return
+                }
+                isFullyCorrect = true
+            }
+        }
+
         fun toggleNote(index: Int, value: Int) {
             if (data[index] == 0) {
                 var noteArray: BooleanArray = noteData[index]
