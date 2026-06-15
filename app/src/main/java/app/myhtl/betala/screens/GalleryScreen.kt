@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,6 +60,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
     val getContent = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         uri?.let { nonNullUri ->
             try {
+                GalleryManager.importSudoku(context, nonNullUri)
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error parsing file", e)
             }
