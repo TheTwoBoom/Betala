@@ -3,9 +3,6 @@ package app.myhtl.betala.opensudoku
 import android.app.Activity
 import android.content.Context
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import java.io.BufferedReader
 import kotlin.io.readText

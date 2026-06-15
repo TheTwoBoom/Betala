@@ -35,7 +35,7 @@ object GameManager {
             data.forEach { value ->
                 if(value != 0) filledCells++
             }
-            if(filledCells == getNumSet().size*getNumSet().size) isFullyFilled = true else isFullyFilled = false
+            if (filledCells == getNumSet().size*getNumSet().size) isFullyFilled = true else isFullyFilled = false
             if(isFullyFilled){
                 checkCorrect().forEach { value ->
                     if(value != 0){
