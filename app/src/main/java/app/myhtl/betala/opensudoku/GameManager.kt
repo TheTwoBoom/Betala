@@ -144,14 +144,7 @@ object GameManager {
         val games: List<SudokuGame>
     )
 
-    fun parseSudokuFile(context: Context, uri: Uri?): OpenSudoku? {
-        val xmlString: String
-        try {
-            xmlString = readTextFromUri(context, uri!!)
-        } catch (_: Exception) {
-            return null
-        }
-
+    fun parseSudokuFile(xmlString: String): OpenSudoku? {
         val parser: XmlPullParser = Xml.newPullParser()
         val inputStream: InputStream = ByteArrayInputStream(xmlString.toByteArray())
 

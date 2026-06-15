@@ -305,7 +305,7 @@ fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActio
             fontSize = with(LocalDensity.current) {
                 (maxWidth * 0.25f).toSp()
             }
-            Box(modifier = Modifier.fillMaxSize().padding(2.dp)){
+            Box(modifier = Modifier.fillMaxSize().padding(5.dp)){
             cellNotes.forEachIndexed {index, show ->
                 val textAlignments = arrayOf(Alignment.TopStart,Alignment.TopCenter,Alignment.TopEnd,Alignment.CenterStart,Alignment.Center,Alignment.CenterEnd,Alignment.BottomStart,Alignment.BottomCenter,Alignment.BottomEnd)
                 if (show){

@@ -53,6 +53,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GameManager
+import app.myhtl.betala.utils.readTextFromUri
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
@@ -65,24 +66,6 @@ import kotlinx.coroutines.launch
 fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
     val context = LocalContext.current
     val activity = context as? Activity
-    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-        uri?.let { nonNullUri ->
-            try {
-                // 1. Spiel laden
-                val openSudoku = GameManager.parseSudokuFile(context, nonNullUri)
-
-                // 2. Das erste Spiel aus der Datei im ViewModel speichern
-                if (openSudoku != null && openSudoku.games.isNotEmpty()) {
-                    sudokuViewModel.currentGame = openSudoku.games[0]
-
-                    // 3. Erst jetzt navigieren
-                    navController.navigate(AppAdditionalDestinations.SUDOKU.route)
-                }
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Error parsing file", e)
-            }
-        }
-    }
     var bannerAdState by remember { mutableStateOf<BannerAd?>(null) }
 
     FlexBox(
@@ -107,15 +90,16 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Button(
-                onClick = {},
+                onClick = {
+
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             ) {
                 Text(text = stringResource(R.string.daily_challenge))
             }
             Button(
                 onClick = {
-                    //navController.navigate(AppAdditionalDestinations.GALLERY.route)
-                    getContent.launch(arrayOf("application/xml", "text/xml", "application/opensudoku"))
+                    navController.navigate(AppAdditionalDestinations.GALLERY.route)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             ) {
