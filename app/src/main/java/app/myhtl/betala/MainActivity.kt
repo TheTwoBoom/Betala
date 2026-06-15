@@ -153,7 +153,7 @@ class SudokuViewModel : ViewModel() {
     var selectedIndex by mutableIntStateOf(0)
     var currentGame by mutableStateOf<GameManager.SudokuGame?>(null)
     var isNoteMode by mutableStateOf(false)
-    var IsFinishedAndCorrect by mutableStateOf(false)
+    var isFinishedAndCorrect by mutableStateOf(false)
 
     fun setIndex(index: Int) {
         selectedIndex = index
@@ -199,7 +199,7 @@ class SudokuViewModel : ViewModel() {
     }
 
     fun updateIsFinishedAndCorrect(){
-        IsFinishedAndCorrect = currentGame?.isFullyCorrect == true
+        isFinishedAndCorrect = currentGame?.isFullyCorrect == true
     }
 }
 
