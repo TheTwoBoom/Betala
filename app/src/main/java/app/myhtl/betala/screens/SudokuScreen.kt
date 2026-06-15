@@ -185,7 +185,7 @@ fun TopRow(navController: NavController){
     ) {
         IconButton(
             onClick = {
-                navController.popBackStack()
+                navController.navigate("home")
             }
         ) {
             Icon(

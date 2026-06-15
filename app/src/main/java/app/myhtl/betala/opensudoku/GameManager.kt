@@ -1,10 +1,7 @@
 package app.myhtl.betala.opensudoku
 
-import android.content.Context
-import android.net.Uri
 import android.util.Xml
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import app.myhtl.betala.utils.readTextFromUri
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.InputStream
