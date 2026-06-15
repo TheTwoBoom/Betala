@@ -95,7 +95,7 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         sameValue = {sudokuViewModel.sameValue(it)},
         isNoteMode = sudokuViewModel.isNoteMode,
         erase = {sudokuViewModel.eraseCell()},
-        isFinishedAndCorrect = sudokuViewModel.IsFinishedAndCorrect
+        isFinishedAndCorrect = sudokuViewModel.isFinishedAndCorrect
     )
 
 if(actions.isFinishedAndCorrect){

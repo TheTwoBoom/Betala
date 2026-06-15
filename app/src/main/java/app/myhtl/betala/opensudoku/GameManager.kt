@@ -14,7 +14,7 @@ object GameManager {
         val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(9)},
         var isFullyFilled: Boolean = false,
         var filledCells: Int = 0,
-        var isFullyCorrect: Boolean = true
+        var isFullyCorrect: Boolean = false
     ) {
         public fun size(): Int = sqrt(data.size.toDouble()).toInt()
         public fun index(x: Int, y: Int): Int = y * size() + x
