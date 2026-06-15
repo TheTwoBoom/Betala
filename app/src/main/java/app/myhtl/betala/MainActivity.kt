@@ -131,13 +131,13 @@ fun BetalaApp() {
                 SettingsScreen(navController)
             }
             composable(AppDestinations.STORE.route) {
-                GalleryScreen(navController, Destination.ALL)
+                GalleryScreen(navController, sudokuViewModel, Destination.ALL)
             }
             composable(AppAdditionalDestinations.SUDOKU.route) {
                 SudokuScreen(navController, sudokuViewModel)
             }
             composable(AppAdditionalDestinations.GALLERY.route) {
-                GalleryScreen(navController, Destination.ALL)
+                GalleryScreen(navController, sudokuViewModel, Destination.ALL)
             }
         }
 

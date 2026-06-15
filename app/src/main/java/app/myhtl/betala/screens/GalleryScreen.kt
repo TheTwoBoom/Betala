@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -17,27 +16,54 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.R
+import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GameManager
+import app.myhtl.betala.utils.readTextFromUri
 
 
 enum class Destination(
-    val route: String,
     val label: String,
-    val sudokus: Array<GameManager.OpenSudoku>
+    val sudokus: (Context) -> List<GameManager.OpenSudoku>,
 ) {
-    ALL("all", "All", GalleryManager.getAllSudokus()),
-    FAVORITES("favorites", "Favorites", GalleryManager.getFavoriteSudokus()),
+    ALL("All", GalleryManager::getAllSudokus),
+    FAVORITES("Favorites", GalleryManager::getFavoriteSudokus),
 }
 @Composable
-fun GalleryScreen(navController: NavController, startDestination: Destination){
+fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel, startDestination: Destination){
+    val context = LocalContext.current
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
+    val sudokuList = remember(selectedDestination, context) {
+        Destination.entries[selectedDestination].sudokus(context)
+    }
+    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        uri?.let { nonNullUri ->
+            try {
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error parsing file", e)
+            }
+        }
+    }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -47,47 +73,60 @@ fun GalleryScreen(navController: NavController, startDestination: Destination){
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
             Header(modifier = Modifier.padding(top = 25.dp), text = stringResource(R.string.gallery_header))
-            Scaffold { contentPadding ->
-                PrimaryTabRow(selectedTabIndex = selectedDestination, modifier = Modifier.padding(contentPadding)) {
-                    Destination.entries.forEachIndexed { index, destination ->
-                        Tab(
-                            selected = selectedDestination == index,
-                            onClick = {
-                                navController.navigate(route = destination.route)
-                                selectedDestination = index
-                            },
-                            text = {
-                                Text(
-                                    text = destination.label,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-            LazyColumn(
-                modifier = Modifier.padding(top = 20.dp).weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(15.dp)
-            ){
-                items(5) { sudokuName ->
-                    Text(
-                        text = "Text",
-                        modifier = Modifier.padding(8.dp),
-                        fontSize = 18.sp
+            PrimaryTabRow(selectedTabIndex = selectedDestination) {
+                Destination.entries.forEachIndexed { index, destination ->
+                    Tab(
+                        selected = selectedDestination == index,
+                        onClick = {
+                            selectedDestination = index
+                        },
+                        text = {
+                            Text(
+                                text = destination.label,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     )
                 }
             }
+            LazyColumn(
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(15.dp)
+            ){
+                items(sudokuList) { sudoku ->
+                    Button(
+                        onClick = {
+                            // 2. Das erste Spiel aus der Datei im ViewModel speichern
+                            if (sudoku.games.isNotEmpty()) {
+                                sudokuViewModel.currentGame = sudoku.games[0]
 
-            Button(onClick = {
-                navController.popBackStack()
-            }) {
-                Text("Back")
+                                // 3. Erst jetzt navigieren
+                                navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ) {
+                        Text(text = sudoku.name)
+                    }
+                }
+            }
+            FloatingActionButton(
+                onClick = {
+                    getContent.launch(arrayOf("application/xml", "text/xml", "application/opensudoku"))
+                },
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(horizontal = 22.dp)
+            ) {
+                Icon(
+                    painterResource(R.drawable.outline_upload_file_24),
+                    contentDescription = "Import"
+                )
             }
         }
-
-
     }
 }
