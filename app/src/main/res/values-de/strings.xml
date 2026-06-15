@@ -13,4 +13,6 @@
     <string name="favorites_header">Deine Lieblings-Sudokus</string>
     <string name="store">Laden</string>
     <string name="gallery_header">Sudokus</string>
+    <string name="win_text">Du hast es gechafft!</string>
+    <string name="back">zurück</string>
 </resources>

@@ -157,9 +157,8 @@ class SudokuViewModel : ViewModel() {
     fun onNumberSelected(number: Int){
         //überprüft, ob die Zahl eine fix vorgegebene Zahl ist
         if(!isNoteMode) {
-            if (currentGame?.getOriginal()[selectedIndex] == 0) {
                 currentGame?.changeValue(selectedIndex, number)
-            }
+
         } else {
             if (isNoteMode){
                 currentGame?.toggleNote(selectedIndex, number)
@@ -172,6 +171,7 @@ class SudokuViewModel : ViewModel() {
     }
 
     fun eraseCell(){
+
         currentGame?.clearData(selectedIndex)
         currentGame?.clearNotes(selectedIndex)
     }
@@ -207,7 +207,7 @@ enum class AppAdditionalDestinations(
     val label: String,
     val route: String
 ) {
-
+    WINSCREEN("Win_Screen", route = "win_screen"),
     SUDOKU("Sudoku_Screen", route = "sudoku_screen"),
     GALLERY("Gallery_Screen", route = "gallery_screen"),
 }

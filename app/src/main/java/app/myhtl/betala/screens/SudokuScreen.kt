@@ -120,7 +120,7 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
             NumRow(
                 modifier = Modifier.padding(top = 20.dp),
                 numbers = sudokugame.getNumSet(),
-                onNumberClick = { number -> actions.onNumberSelected(number) }
+                actions = actions
             )
             SudokuToolBar(Modifier.padding(top = 10.dp), actions)
             /*NotesNumRow(
@@ -323,13 +323,13 @@ fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActio
 }
 
 @Composable
-fun NumRow(modifier: Modifier, numbers: List<Int>, onNumberClick: (Int) -> Unit){
+fun NumRow(modifier: Modifier, numbers: List<Int>, actions: SudokuActions){
 
     Row(
         modifier = modifier
             .fillMaxWidth(0.9f)
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.primary)
             .border(
                 width = 4.dp,
                 color = MaterialTheme.colorScheme.primary,
@@ -345,13 +345,18 @@ fun NumRow(modifier: Modifier, numbers: List<Int>, onNumberClick: (Int) -> Unit)
                     .weight(1f)
                     .aspectRatio(1f)
                     .clickable {
-                        onNumberClick(value)
+                        actions.onNumberSelected(value)
                     },contentAlignment = Alignment.Center
             ){
                 val fontSize = with(LocalDensity.current) {
-                    (maxWidth * 0.5f).toSp()
+                    if(actions.isNoteMode){
+                        (maxWidth * 0.35f).toSp()
+                    }
+                    else{
+                        (maxWidth * 0.6f).toSp()
+                    }
                 }
-                Text(value.toString(), fontSize = fontSize)
+                Text(value.toString(), fontSize = fontSize, color = MaterialTheme.colorScheme.surface)
             }
         }
     }
@@ -360,11 +365,10 @@ fun NumRow(modifier: Modifier, numbers: List<Int>, onNumberClick: (Int) -> Unit)
 @Composable
 fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
     Row(modifier = modifier
-        .clip(RoundedCornerShape(12.dp))
-        .background(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(24.dp)),
+        .clip(shape = RoundedCornerShape(12.dp))
+        .background(color = MaterialTheme.colorScheme.tertiaryContainer),
         verticalAlignment = Alignment.CenterVertically){
         IconButton(
-            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer),
             onClick = {
                 actions.toggleNoteMode()
             }
@@ -379,7 +383,6 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
         }
 
         IconButton(
-            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer),
             onClick = {
                 actions.erase()
             }

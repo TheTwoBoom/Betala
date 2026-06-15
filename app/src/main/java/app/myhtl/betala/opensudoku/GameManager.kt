@@ -20,10 +20,12 @@ object GameManager {
         public fun index(x: Int, y: Int): Int = y * size() + x
 
         fun changeValue(index: Int, value: Int) {
-            changed[index] = value
-            data[index] = value
-            if (value != 0) {
-                clearNotes(index)
+            if(this.getOriginal()[index] == 0) {
+                changed[index] = value
+                data[index] = value
+                if (value != 0) {
+                    clearNotes(index)
+                }
             }
         }
         fun toggleNote(index: Int, value: Int) {
@@ -34,10 +36,14 @@ object GameManager {
             }
         }
         fun clearNotes(index: Int) {
-            noteData[index] = BooleanArray(9){false}
+            if(this.getOriginal()[index] == 0) {
+                noteData[index] = BooleanArray(9) { false }
+            }
         }
         fun clearData(index: Int) {
-            data[index] = 0
+            if(this.getOriginal()[index] == 0){
+                data[index] = 0
+            }
         }
 
         fun checkCorrect(): List<Int> {
