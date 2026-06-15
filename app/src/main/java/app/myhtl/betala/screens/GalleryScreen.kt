@@ -100,11 +100,9 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                 items(sudokuList) { sudoku ->
                     Button(
                         onClick = {
-                            // 2. Das erste Spiel aus der Datei im ViewModel speichern
                             if (sudoku.games.isNotEmpty()) {
                                 sudokuViewModel.currentGame = sudoku.games[0]
 
-                                // 3. Erst jetzt navigieren
                                 navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                             }
                         },

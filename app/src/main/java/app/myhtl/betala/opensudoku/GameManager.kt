@@ -30,19 +30,21 @@ object GameManager {
                     clearNotes(index)
                 }
             }
-
             updateAttributes()
         }
 
         fun updateAttributes(){
+            filledCells = 0
             data.forEach { value ->
                 if(value != 0) filledCells++
             }
-            if(filledCells == getNumSet().size*3) isFullyFilled = true else isFullyFilled = false
+            if(filledCells == getNumSet().size*getNumSet().size) isFullyFilled = true else isFullyFilled = false
             if(isFullyFilled){
                 checkCorrect().forEach { value ->
-                    if(value != 0) isFullyCorrect = false
-                    return
+                    if(value != 0){
+                        isFullyCorrect = false
+                        return
+                    }
                 }
                 isFullyCorrect = true
             }
@@ -60,8 +62,9 @@ object GameManager {
                 noteData[index] = BooleanArray(9) { false }
             }
         }
-        fun clearData(index: Int) {
+        fun clearDataAt(index: Int) {
             if(this.getOriginal()[index] == 0){
+                updateAttributes()
                 data[index] = 0
             }
         }

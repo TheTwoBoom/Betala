@@ -13,6 +13,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
+import androidx.compose.foundation.layout.FlexAlignContent
+import androidx.compose.foundation.layout.FlexAlignItems
+import androidx.compose.foundation.layout.FlexBox
+import androidx.compose.foundation.layout.FlexDirection
+import androidx.compose.foundation.layout.FlexWrap
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -84,6 +90,7 @@ data class SudokuActions(
     val erase: () -> Unit,
     val isFinishedAndCorrect: Boolean
 )
+@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
     val actions = SudokuActions(
@@ -98,9 +105,11 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         isFinishedAndCorrect = sudokuViewModel.isFinishedAndCorrect
     )
 
-if(actions.isFinishedAndCorrect){
-    navController.navigate(AppAdditionalDestinations.WINSCREEN.route)
-}
+    LaunchedEffect(sudokuViewModel.isFinishedAndCorrect) {
+        if (sudokuViewModel.isFinishedAndCorrect) {
+            navController.navigate(AppAdditionalDestinations.WINSCREEN.route)
+        }
+    }
 
     val sudokugame = sudokuViewModel.currentGame?: return
     val rowCount = sudokugame.getNumSet().size
@@ -111,31 +120,27 @@ if(actions.isFinishedAndCorrect){
     val activity = context as? Activity
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally) {
 
-            TopRow(navController)
-            CreateSudoku(Modifier.padding(top = 20.dp),
-                rowCount = rowCount,
-                cells = cells,
-                cellNotes = cellNotes,
-                actions = actions,
-                sudokuViewModel.selectedIndex)
-            NumRow(
-                modifier = Modifier.padding(top = 20.dp),
-                numbers = sudokugame.getNumSet(),
-                actions = actions
-            )
-            SudokuToolBar(Modifier.padding(top = 10.dp), actions)
-            /*NotesNumRow(
-                modifier = Modifier.padding(top = 20.dp),
-                numbers = sudokugame.getNumSet(),
-                onNoteNumberSelected = { number -> actions.onNoteNumberSelected(number)}
-                )*/
+            Column(Modifier
+                .padding(innerPadding),
+                horizontalAlignment = Alignment.CenterHorizontally) {
 
-        }
+                TopRow(navController)
+                CreateSudoku(Modifier.padding(top = 20.dp),
+                    rowCount = rowCount,
+                    cells = cells,
+                    cellNotes = cellNotes,
+                    actions = actions,
+                    sudokuViewModel.selectedIndex)
+                NumRow(
+                    modifier = Modifier.padding(top = 20.dp),
+                    numbers = sudokugame.getNumSet(),
+                    actions = actions
+                )
+                SudokuToolBar(Modifier.padding(top = 10.dp), actions)
+            }
+    }
+
 
        /* var bannerAdState by remember { mutableStateOf<BannerAd?>(null) }
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
@@ -170,7 +175,7 @@ if(actions.isFinishedAndCorrect){
                 }
             }
         }*/
-    }
+
 
 }
 
