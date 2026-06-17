@@ -41,6 +41,7 @@ import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.utils.readTextFromUri
+import kotlinx.coroutines.runBlocking
 
 
 enum class Destination(

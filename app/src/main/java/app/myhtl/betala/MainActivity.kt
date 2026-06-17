@@ -62,9 +62,8 @@ class MainActivity : ComponentActivity() {
             MobileAds.initialize(
                 this@MainActivity,
                 InitializationConfig.Builder("ca-app-pub-3940256099942544~3347511713").build()
-            ) {
-                // Adapter initialization is complete.
-            }
+            ) {}
+            GalleryManager.fetchAllSudokus(applicationContext)
         }
     }
 }
@@ -77,7 +76,6 @@ fun BetalaApp() {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-
 
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val configuration = LocalConfiguration.current
