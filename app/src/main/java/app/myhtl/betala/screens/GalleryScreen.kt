@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
 import android.net.Uri
-import android.provider.MediaStore
 import android.util.Log
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.lazy.items
@@ -30,6 +30,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,8 +41,8 @@ import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GameManager
-import app.myhtl.betala.utils.readTextFromUri
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 enum class Destination(
@@ -54,6 +55,8 @@ enum class Destination(
 @Composable
 fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel, startDestination: Destination){
     val context = LocalContext.current
+    val activity = LocalActivity.current
+    val scope = rememberCoroutineScope()
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
     val sudokuList = remember(selectedDestination, context) {
         Destination.entries[selectedDestination].sudokus(context)
@@ -112,6 +115,14 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {
                         Text(text = sudoku.name)
+                    }
+                    Button(onClick = {
+                        scope.launch(Dispatchers.Main) {
+                            val bitmap = GalleryManager.createBitmapFromSudoku(context, sudoku.games[0])
+                            activity?.let { GalleryManager.printBitmap(it, bitmap) }
+                        }
+                    }) {
+                        Text("Print as BitMap")
                     }
                 }
             }

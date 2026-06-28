@@ -14,6 +14,7 @@ android {
     defaultConfig {
         applicationId = "app.myhtl.betala"
         minSdk = 31
+        compileSdk = 37
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -43,7 +44,9 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.13.0")
     implementation("androidx.fragment:fragment-ktx:1.8.9")
     implementation(libs.ads.mobile.sdk)
+    implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -55,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.print)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

@@ -1,11 +1,5 @@
 package app.myhtl.betala.screens
 
-import ads_mobile_sdk.pr
-import android.R.attr.maxWidth
-import android.app.Activity
-import android.text.Editable
-import android.util.Log
-import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,33 +8,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
-import androidx.compose.foundation.layout.FlexAlignContent
-import androidx.compose.foundation.layout.FlexAlignItems
-import androidx.compose.foundation.layout.FlexBox
-import androidx.compose.foundation.layout.FlexDirection
-import androidx.compose.foundation.layout.FlexWrap
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -49,34 +30,17 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.SudokuViewModel
-import app.myhtl.betala.opensudoku.GameManager
-import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
-import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
-import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
-import com.google.android.libraries.ads.mobile.sdk.common.AdLoadResult
-import kotlinx.coroutines.launch
 
 
 data class SudokuActions(
@@ -88,7 +52,8 @@ data class SudokuActions(
     val sameValue: (Int) -> Boolean,
     val isNoteMode: Boolean,
     val erase: () -> Unit,
-    val isFinishedAndCorrect: Boolean
+    val isFinishedAndCorrect: Boolean,
+    val isPrinting: Boolean
 )
 @OptIn(ExperimentalFlexBoxApi::class)
 @Composable
@@ -102,7 +67,8 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         sameValue = {sudokuViewModel.sameValue(it)},
         isNoteMode = sudokuViewModel.isNoteMode,
         erase = {sudokuViewModel.eraseCell()},
-        isFinishedAndCorrect = sudokuViewModel.isFinishedAndCorrect
+        isFinishedAndCorrect = sudokuViewModel.isFinishedAndCorrect,
+        isPrinting = false
     )
 
     LaunchedEffect(sudokuViewModel.isFinishedAndCorrect) {
@@ -116,8 +82,6 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
     val columnCount = 9
     val cells = sudokugame.data
     val cellNotes = sudokugame.noteData
-    val context = LocalContext.current
-    val activity = context as? Activity
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
@@ -218,7 +182,7 @@ fun CreateSudoku(modifier: Modifier, rowCount: Int, cells: List<Int>, cellNotes:
         columns = GridCells.Fixed(rowCount)
     ){
         itemsIndexed(cells) {index, value ->
-            val color = CalcColor(selectedCell, index, actions = actions)
+            val color = calcColor(selectedCell, index, actions = actions)
             val textColor = if(actions.isEditable(index)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
             SudokuCell(value = value,cellNotes = cellNotes[index], i = index, actions = actions, color = color, textColor = textColor ) //textcolor = CalcTextColor)
         }
@@ -226,9 +190,12 @@ fun CreateSudoku(modifier: Modifier, rowCount: Int, cells: List<Int>, cellNotes:
 }
 
 @Composable
-fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
+fun calcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
+    if (actions.isPrinting) {
+        return Color(0xFFFFFFFF)
+    }
     //wrong number?
-    if(!actions.validate(index)){
+    else if(!actions.validate(index)){
         return MaterialTheme.colorScheme.errorContainer
     }
     //selected?
@@ -297,7 +264,7 @@ fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActio
         var fontSize = with(LocalDensity.current) {
             (maxWidth * 0.6f).toSp()
         }
-        var text = ""
+        var text: String
         if (value != 0) {
             text = value.toString()
             Text(

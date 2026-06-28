@@ -3,20 +3,31 @@ package app.myhtl.betala.opensudoku
 import android.app.Activity
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import java.io.BufferedReader
-import kotlin.io.readText
+import androidx.print.PrintHelper
 import app.myhtl.betala.utils.readTextFromUri
 import com.google.crypto.tink.subtle.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import app.myhtl.betala.screens.CreateSudoku
+import app.myhtl.betala.screens.SudokuActions
+import app.myhtl.betala.utils.captureComposable
+import app.myhtl.betala.utils.useVirtualDisplay
 
 object GalleryManager {
-    var allSudokus: MutableList<GameManager.OpenSudoku> = mutableListOf()
+    var allSudokus: SnapshotStateList<GameManager.OpenSudoku> = SnapshotStateList()
     suspend fun fetchAllSudokus(context: Context) = coroutineScope {
         val predefinedFiles = context.assets.list("")?.filter { it.endsWith(".opensudoku") }.orEmpty()
         val userFiles = context.filesDir.list()?.filter { it.endsWith(".opensudoku") }.orEmpty()
@@ -77,5 +88,50 @@ object GalleryManager {
             }
         }
         outputStream.close()
+        runBlocking {loadUserSudoku(context, sudokuName)}
+    }
+
+    suspend fun createBitmapFromSudoku(context: Context, sudokuGame: GameManager.SudokuGame): ImageBitmap {
+        val bitmap = useVirtualDisplay(context) { display ->
+            captureComposable(
+                context = context,
+                size = DpSize(800.dp, 800.dp),
+                display = display
+            ) {
+                LaunchedEffect(Unit) {
+                    capture()
+                }
+                CreateSudoku(
+                    Modifier,
+                    rowCount = sudokuGame.size(),
+                    cells = sudokuGame.data,
+                    cellNotes = sudokuGame.noteData,
+                    actions = SudokuActions(
+                        setIndex = {},
+                        onNumberSelected = {},
+                        toggleNoteMode = {},
+                        validate = { true },
+                        isEditable = { false },
+                        sameValue = { false },
+                        isNoteMode = false,
+                        erase = {},
+                        isFinishedAndCorrect = true,
+                        isPrinting = true
+                    ),
+                    selectedCell = -1,
+                )
+            }
+        }
+        return bitmap
+    }
+
+    fun printBitmap(activity: Activity, bitmap: ImageBitmap) {
+        activity.also { context ->
+            PrintHelper(context).apply {
+                scaleMode = PrintHelper.SCALE_MODE_FIT
+            }.also { printHelper ->
+                printHelper.printBitmap("Betala Sudoku", bitmap.asAndroidBitmap())
+            }
+        }
     }
 }
