@@ -17,6 +17,7 @@
     <string name="gallery_header">Sudokus</string>
     <string name="win_text">You did it!</string>
     <string name="back">back</string>
+    <string name="create_Sudoku">create Sudoku</string>
 
 
 </resources>

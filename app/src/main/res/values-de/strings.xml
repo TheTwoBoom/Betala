@@ -15,4 +15,5 @@
     <string name="gallery_header">Sudokus</string>
     <string name="win_text">Du hast es gechafft!</string>
     <string name="back">zurück</string>
+    <string name="create_Sudoku">Sudoku erstellen</string>
 </resources>

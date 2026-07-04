@@ -116,6 +116,8 @@ object GalleryManager {
                         isNoteMode = false,
                         erase = {},
                         isFinishedAndCorrect = true,
+                        //Attention: make the number variable
+                        getNumbers = 9,
                         isPrinting = true
                     ),
                     selectedCell = -1,
