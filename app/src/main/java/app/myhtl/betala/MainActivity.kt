@@ -63,7 +63,9 @@ class MainActivity : ComponentActivity() {
                 this@MainActivity,
                 InitializationConfig.Builder("ca-app-pub-3940256099942544~3347511713").build()
             ) {}
-            GalleryManager.fetchAllSudokus(applicationContext)
+            if (GalleryManager.allSudokus.isEmpty()) {
+                GalleryManager.fetchAllSudokus(applicationContext)
+            }
         }
     }
 }

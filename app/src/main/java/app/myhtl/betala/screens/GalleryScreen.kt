@@ -23,14 +23,26 @@ import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,9 +52,11 @@ import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
+import app.myhtl.betala.opensudoku.GalleryManager.createBitmapFromSudoku
 import app.myhtl.betala.opensudoku.GameManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 
 enum class Destination(
@@ -52,6 +66,8 @@ enum class Destination(
     ALL("All", GalleryManager::getAllSudokus),
     FAVORITES("Favorites", GalleryManager::getFavoriteSudokus),
 }
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel, startDestination: Destination){
     val context = LocalContext.current
@@ -61,82 +77,160 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
     val sudokuList = remember(selectedDestination, context) {
         Destination.entries[selectedDestination].sudokus(context)
     }
-    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+    var expanded by remember { mutableStateOf(false) }
+    val loading = false
+    val filters: SnapshotStateMap<String, String> = SnapshotStateMap()
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
         uri?.let { nonNullUri ->
             try {
                 GalleryManager.importSudoku(context, nonNullUri)
             } catch (e: Exception) {
-                Log.e("MainActivity", "Error parsing file", e)
+                Log.e("GalleryScreen", "Error importing sudoku", e)
             }
         }
     }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
-        ){
-            Header(modifier = Modifier.padding(top = 25.dp), text = stringResource(R.string.gallery_header))
-            PrimaryTabRow(selectedTabIndex = selectedDestination) {
+        ) {
+            Header(
+                modifier = Modifier.padding(top = 25.dp),
+                text = stringResource(R.string.gallery_header)
+            )
+
+            PrimaryTabRow(
+                selectedTabIndex = selectedDestination,
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
                 Destination.entries.forEachIndexed { index, destination ->
                     Tab(
                         selected = selectedDestination == index,
-                        onClick = {
-                            selectedDestination = index
-                        },
+                        onClick = { selectedDestination = index },
                         text = {
                             Text(
                                 text = destination.label,
                                 maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
-                        }
+                        },
                     )
                 }
             }
-            LazyColumn(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(15.dp)
-            ){
-                items(sudokuList) { sudoku ->
-                    Button(
-                        onClick = {
-                            if (sudoku.games.isNotEmpty()) {
-                                sudokuViewModel.currentGame = sudoku.games[0]
-
-                                navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+            if (loading) {
+                Column(
+                    Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) { LoadingIndicator() }
+            } else {
+                Box(modifier = Modifier
+                    .wrapContentSize(Alignment.TopStart)) {
+                    FilterChip(
+                        onClick = { expanded = !expanded },
+                        label = {
+                            Text(
+                                filters.getOrDefault("level", "Difficulty")
+                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() })
+                        },
+                        selected = filters.contains("level"),
+                        leadingIcon = {
+                            if (filters.contains("level")) {
+                                Icon(
+                                    painterResource(R.drawable.outline_check),
+                                    contentDescription = "Done icon",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                    ) {
-                        Text(text = sudoku.name)
-                    }
-                    Button(onClick = {
-                        scope.launch(Dispatchers.Main) {
-                            val bitmap = GalleryManager.createBitmapFromSudoku(context, sudoku.games[0])
-                            activity?.let { GalleryManager.printBitmap(it, bitmap) }
+                        trailingIcon = {
+                            Icon(
+                                painterResource(R.drawable.outline_arrow_drop_down),
+                                contentDescription = "Open icon",
+                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            )
                         }
-                    }) {
-                        Text("Print as BitMap")
+                    )
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        for (filter in listOf("Easy", "Medium", "Hard")) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    expanded = false
+                                    filters["level"] = filter
+                                },
+                                text = { Text(filter) },
+                                selected = filters["level"] == filter,
+                                shapes = MenuDefaults.itemShapes()
+                            )
+                        }
+                    }
+                }
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    contentPadding = PaddingValues(10.dp),
+                ) {
+                    items(sudokuList) { sudoku ->
+                        OutlinedCard {
+                            ListItem(
+                                modifier = Modifier.padding(5.dp),
+                                onClick = {
+                                    if (sudoku.games.isNotEmpty()) {
+                                        sudokuViewModel.currentGame = sudoku.games[0]
+                                        navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                                    }
+                                },
+                                onLongClick = {
+                                    scope.launch(Dispatchers.Main) {
+                                        val bitmap =
+                                            createBitmapFromSudoku(context, sudoku.games[0])
+                                        activity?.let { GalleryManager.printBitmap(it, bitmap) }
+                                    }
+                                },
+                                leadingContent = {
+                                    Icon(
+                                        painterResource(R.drawable.ink_eraser_24px),
+                                        contentDescription = "Sudoku Preview",
+                                    )
+                                },
+                                trailingContent = {
+                                    Icon(
+                                        painterResource(R.drawable.outline_play_arrow),
+                                        contentDescription = "Play"
+                                    )
+                                },
+                                overlineContent = {
+                                    Text(sudoku.author)
+                                },
+                                contentPadding = PaddingValues(5.dp)
+                            ) {
+                                Text(sudoku.name, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                            }
+                        }
                     }
                 }
             }
             FloatingActionButton(
                 onClick = {
-                    getContent.launch(arrayOf("application/xml", "text/xml", "application/opensudoku"))
+                    importLauncher.launch(
+                        arrayOf("application/xml", "text/xml", "application/opensudoku")
+                    )
                 },
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(horizontal = 22.dp)
+                    .padding(horizontal = 22.dp),
             ) {
                 Icon(
                     painterResource(R.drawable.outline_upload_file_24),
-                    contentDescription = "Import"
+                    contentDescription = "Import",
                 )
             }
         }

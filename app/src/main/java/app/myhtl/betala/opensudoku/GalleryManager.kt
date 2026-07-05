@@ -42,18 +42,18 @@ object GalleryManager {
         }
         sudokuJobs.awaitAll()
     }
-    fun getAllSudokus(context: Context): MutableList<GameManager.OpenSudoku> {
+    fun getAllSudokus(context: Context): List<GameManager.OpenSudoku> {
         if (allSudokus.isEmpty()) {
             runBlocking { fetchAllSudokus(context) }
         }
         return allSudokus
     }
-    fun getFavoriteSudokus(context: Context): MutableList<GameManager.OpenSudoku> {
+    fun getFavoriteSudokus(context: Context): List<GameManager.OpenSudoku> {
         val activity = context as? Activity
         val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
         val favorites = sharedPref?.getStringSet("favoriteSudokus", HashSet<String>())?.toMutableSet()
         favorites?.add("")
-        val gameList: MutableList<GameManager.OpenSudoku> = allSudokus.filter { favorites?.contains(it.name) == true }.toMutableList()
+        val gameList: List<GameManager.OpenSudoku> = allSudokus.filter { favorites?.contains(it.name) == true }
         return gameList
     }
     suspend fun loadPredefinedSudoku(context: Context, fileName: String) {
@@ -91,11 +91,12 @@ object GalleryManager {
         runBlocking {loadUserSudoku(context, sudokuName)}
     }
 
-    suspend fun createBitmapFromSudoku(context: Context, sudokuGame: GameManager.SudokuGame): ImageBitmap {
+    suspend fun createBitmapFromSudoku(context: Context, sudokuGame: GameManager.SudokuGame, size: DpSize = DpSize(800.dp, 800.dp)): ImageBitmap {
+        // Use the persistent virtual display manager instead of creating a new one each time
         val bitmap = useVirtualDisplay(context) { display ->
             captureComposable(
                 context = context,
-                size = DpSize(800.dp, 800.dp),
+                size = size,
                 display = display
             ) {
                 LaunchedEffect(Unit) {
