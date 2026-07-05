@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.navigation.NavController
@@ -39,6 +40,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
+import app.myhtl.betala.opensudoku.GameManager
+import app.myhtl.betala.opensudoku.SudokuGenerator
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
@@ -78,7 +81,6 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                 onClick = {
 
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             ) {
                 Text(text = stringResource(R.string.daily_challenge))
             }
@@ -86,18 +88,36 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                 onClick = {
                     navController.navigate(AppAdditionalDestinations.GALLERY.route)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             ) {
                 Text(text = stringResource(R.string.select_level))
             }
             Button(
                 onClick = {
-                    // navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                    var generator = SudokuGenerator(numbers = 9)
+                    // would else be empty
+                    generator.creatRandomSudoku()
+                    var sudoku = GameManager.SudokuGame(generator.getRandomSudoku())
+                    sudokuViewModel.currentGame = sudoku;
+
+                    navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
                 Text(text = stringResource(R.string.random_level))
             }
+            Button(
+                onClick = {
+                    val numbers = 9
+                    var sudoku = GameManager.SudokuGame(SnapshotStateList(numbers*numbers){0})
+                    sudokuViewModel.currentGame = sudoku;
+
+                    navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                },
+            ) {
+                Text(text = stringResource(R.string.create_Sudoku))
+            }
+
+
+
         }
     }
     Column(

@@ -14,6 +14,7 @@ foundationLayout = "1.11.4"
 animation = "1.11.4"
 lifecycleProcess = "2.11.0"
 print = "1.1.0"
+material3Version = "1.0.0-alpha17"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
 androidx-print = { group = "androidx.print", name = "print", version.ref = "print" }
+androidx-material3 = { group = "androidx.xr.compose.material3", name = "material3", version.ref = "material3Version" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
