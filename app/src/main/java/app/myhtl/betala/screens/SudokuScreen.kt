@@ -206,7 +206,7 @@ fun TopRow(navController: NavController){
             }
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_outline_arrow_back),
+                painter = painterResource(id = R.drawable.arrow_back),
                 contentDescription = "Back",
                 modifier = Modifier.size(24.dp)
             )
@@ -484,9 +484,9 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 Icon(
 
                     painter = if (actions.isNoteMode) {
-                        painterResource(id = R.drawable.edit_24px)
+                        painterResource(id = R.drawable.edit)
                     } else {
-                        painterResource(id = R.drawable.edit_off_24px)
+                        painterResource(id = R.drawable.edit_off)
                     },
                     contentDescription = "Notes"
                 )
@@ -498,7 +498,7 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 }
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ink_eraser_24px),
+                    painter = painterResource(id = R.drawable.ink_eraser),
                     contentDescription = "Erase"
                 )
             }
@@ -518,9 +518,9 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 Icon(
 
                     painter = if (actions.isNoteMode) {
-                        painterResource(id = R.drawable.edit_24px)
+                        painterResource(id = R.drawable.edit)
                     } else {
-                        painterResource(id = R.drawable.edit_off_24px)
+                        painterResource(id = R.drawable.edit_off)
                     },
                     contentDescription = "Notes"
                 )
@@ -532,7 +532,7 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 }
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ink_eraser_24px),
+                    painter = painterResource(id = R.drawable.ink_eraser),
                     contentDescription = "Erase"
                 )
             }

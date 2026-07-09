@@ -59,7 +59,7 @@ fun Header(modifier: Modifier = Modifier, text: String, returnDest: String, navC
             onClick = { navController.navigate(returnDest) },
             shapes = IconButtonDefaults.shapes(),
         ) {
-            Icon(painterResource(R.drawable.outline_close), "Exit")
+            Icon(painterResource(R.drawable.close), "Exit")
         }
         Text(
             text = text,
@@ -74,7 +74,7 @@ fun Header(modifier: Modifier = Modifier, text: String, returnDest: String, navC
                 onClick = { expanded = !expanded },
                 shapes = IconButtonDefaults.shapes()
             ) {
-                Icon(painterResource(R.drawable.outline_more_vert), "Dropdown")
+                Icon(painterResource(R.drawable.more_vert), "Dropdown")
             }
             DropdownMenu(
                 expanded = expanded,

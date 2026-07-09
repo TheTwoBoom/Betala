@@ -131,7 +131,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                     shapes = IconButtonDefaults.shapes(),
                 ) {
                     Icon(
-                        painterResource(R.drawable.outline_search),
+                        painterResource(R.drawable.search),
                         contentDescription = "Search Button"
                     )
                 }
@@ -170,7 +170,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                                 leadingIcon = {
                                     if (filter.options.any { it.isSelected }) {
                                         Icon(
-                                            painterResource(R.drawable.outline_check),
+                                            painterResource(R.drawable.check),
                                             contentDescription = "Done icon",
                                             modifier = Modifier.size(FilterChipDefaults.IconSize)
                                         )
@@ -179,7 +179,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                                 trailingIcon = {
                                     if (filter.options.first().id != "") {
                                         Icon(
-                                            painterResource(R.drawable.outline_arrow_drop_down),
+                                            painterResource(R.drawable.arrow_drop_down),
                                             contentDescription = "Open icon",
                                             modifier = Modifier.size(FilterChipDefaults.IconSize)
                                         )
@@ -246,13 +246,13 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                                 },
                                 leadingContent = {
                                     Icon(
-                                        painterResource(R.drawable.outline_numbers),
+                                        painterResource(R.drawable.numbers),
                                         contentDescription = "Sudoku Preview",
                                     )
                                 },
                                 trailingContent = {
                                     Icon(
-                                        painterResource(R.drawable.outline_play_arrow),
+                                        painterResource(R.drawable.play_arrow),
                                         contentDescription = "Play"
                                     )
                                 },
@@ -279,7 +279,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                     .padding(horizontal = 22.dp),
             ) {
                 Icon(
-                    painterResource(R.drawable.outline_upload_file_24),
+                    painterResource(R.drawable.upload_file),
                     contentDescription = "Import",
                 )
             }
