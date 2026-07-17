@@ -2,7 +2,6 @@ package app.myhtl.betala
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Activity
 import android.content.res.Configuration
 
 import android.os.Bundle
@@ -39,7 +38,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.screens.CurrentDevice
-import app.myhtl.betala.screens.Destination
 import app.myhtl.betala.ui.theme.BetalaTheme
 import app.myhtl.betala.screens.GalleryScreen
 import app.myhtl.betala.screens.HomeScreen
