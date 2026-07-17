@@ -2,13 +2,14 @@ package app.myhtl.betala
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Activity
 import android.content.res.Configuration
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -17,9 +18,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
@@ -86,15 +84,16 @@ class MainActivity : ComponentActivity() {
                 this@MainActivity,
                 InitializationConfig.Builder("ca-app-pub-3940256099942544~3347511713").build()
             ) {}
-            GalleryManager.fetchAllSudokus(applicationContext)
+            if (GalleryManager.allSudokus.isEmpty()) {
+                GalleryManager.fetchAllSudokus(applicationContext)
+            }
         }
     }
 }
-@SuppressLint("ContextCastToActivity")
 @PreviewScreenSizes
 @Composable
 fun BetalaApp() {
-    //val activity: Activity = LocalContext.current as Activity
+    val activity: Activity? = LocalActivity.current
     val navController = rememberNavController()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -105,7 +104,6 @@ fun BetalaApp() {
 
     val windowSizeClass = adaptiveInfo.windowSizeClass
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             AppDestinations.entries.forEach { destinations ->
@@ -153,21 +151,19 @@ fun BetalaApp() {
                 SettingsScreen(navController)
             }
             composable(AppDestinations.STORE.route) {
-                GalleryScreen(navController, sudokuViewModel, Destination.ALL)
+                GalleryScreen(navController, sudokuViewModel)
             }
             composable(AppAdditionalDestinations.SUDOKU.route) {
                 SudokuScreen(navController, sudokuViewModel)
             }
             composable(AppAdditionalDestinations.GALLERY.route) {
-                GalleryScreen(navController, sudokuViewModel, Destination.ALL)
+                GalleryScreen(navController, sudokuViewModel)
             }
             composable(AppAdditionalDestinations.WINSCREEN.route) {
                 WinScreen(navController)
             }
         }
-
     }
-
 }
 
 enum class AppDestinations(
@@ -175,10 +171,9 @@ enum class AppDestinations(
     val icon: Int,
     val route: String
 ) {
-
-    STORE(R.string.store, R.drawable.storefront_24px, route = "store"),
-    HOME(R.string.home, R.drawable.ic_home, route = "home"),
-    SETTINGS(R.string.settings, R.drawable.outline_settings_24, route = "settings"),
+    HOME(R.string.home, R.drawable.home, route = "home"),
+    STORE(R.string.store, R.drawable.storefront, route = "store"),
+    SETTINGS(R.string.settings, R.drawable.settings, route = "settings"),
 }
 
 enum class AppAdditionalDestinations(

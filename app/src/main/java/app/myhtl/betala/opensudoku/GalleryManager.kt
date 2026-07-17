@@ -23,8 +23,11 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import app.myhtl.betala.screens.CreateSudoku
 import app.myhtl.betala.screens.SudokuActions
+import app.myhtl.betala.utils.FilterOption
 import app.myhtl.betala.utils.captureComposable
 import app.myhtl.betala.utils.useVirtualDisplay
+import kotlin.collections.isNotEmpty
+import kotlin.collections.orEmpty
 
 object GalleryManager {
     var allSudokus: SnapshotStateList<GameManager.OpenSudoku> = SnapshotStateList()
@@ -42,19 +45,52 @@ object GalleryManager {
         }
         sudokuJobs.awaitAll()
     }
-    fun getAllSudokus(context: Context): MutableList<GameManager.OpenSudoku> {
+    fun getAllSudokus(context: Context): List<GameManager.OpenSudoku> {
         if (allSudokus.isEmpty()) {
             runBlocking { fetchAllSudokus(context) }
         }
         return allSudokus
     }
-    fun getFavoriteSudokus(context: Context): MutableList<GameManager.OpenSudoku> {
+    fun getFavoriteSudokus(context: Context): List<GameManager.OpenSudoku> {
         val activity = context as? Activity
         val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
-        val favorites = sharedPref?.getStringSet("favoriteSudokus", HashSet<String>())?.toMutableSet()
+        val favorites = sharedPref?.getStringSet(
+            "favoriteSudokus", HashSet<String>()
+        )?.toMutableSet()
         favorites?.add("")
-        val gameList: MutableList<GameManager.OpenSudoku> = allSudokus.filter { favorites?.contains(it.name) == true }.toMutableList()
+        val gameList: List<GameManager.OpenSudoku> = allSudokus.filter {
+            favorites?.contains(it.name)!!
+        }
         return gameList
+    }
+
+    fun getFilteredSudokus(context: Context, filters: List<FilterOption>): List<GameManager.OpenSudoku> {
+        var fList: List<GameManager.OpenSudoku> = getAllSudokus(context)
+        val favoriteFilter = filters.firstOrNull { it.id == "favorite"}
+        val levelFilter = filters.firstOrNull { it.id == "level" }
+        when {
+            // TODO: implement favorites filter
+            levelFilter != null -> fList = filterDifficulty(levelFilter, fList)
+            // TODO: implement other filters
+        }
+
+        return fList
+    }
+
+    fun filterDifficulty(filter: FilterOption, list: List<GameManager.OpenSudoku>): List<GameManager.OpenSudoku> {
+        var fList = list
+        val selectedLevels = filter
+            .options
+            .filter { it.isSelected }
+            .map { it.id }
+            .toSet()
+
+        if (selectedLevels.isNotEmpty()) {
+            fList = fList.filter { sudoku ->
+                sudoku.level in selectedLevels
+            }
+        }
+        return fList
     }
     suspend fun loadPredefinedSudoku(context: Context, fileName: String) {
         return withContext(Dispatchers.IO) {
@@ -91,11 +127,11 @@ object GalleryManager {
         runBlocking {loadUserSudoku(context, sudokuName)}
     }
 
-    suspend fun createBitmapFromSudoku(context: Context, sudokuGame: GameManager.SudokuGame): ImageBitmap {
+    suspend fun createBitmapFromSudoku(context: Context, sudokuGame: GameManager.SudokuGame, size: DpSize = DpSize(800.dp, 800.dp)): ImageBitmap {
         val bitmap = useVirtualDisplay(context) { display ->
             captureComposable(
                 context = context,
-                size = DpSize(800.dp, 800.dp),
+                size = size,
                 display = display
             ) {
                 LaunchedEffect(Unit) {
@@ -116,7 +152,7 @@ object GalleryManager {
                         isNoteMode = false,
                         erase = {},
                         isFinishedAndCorrect = true,
-                        //Attention: make the number variable
+                        // TODO: make the number variable
                         getNumbers = 9,
                         isPrinting = true
                     ),

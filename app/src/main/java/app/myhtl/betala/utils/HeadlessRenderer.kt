@@ -133,28 +133,43 @@ private fun Picture.toImageBitmap(): ImageBitmap =
 
 
 private class EmptySavedStateRegistryOwner : SavedStateRegistryOwner {
-    private val controller = SavedStateRegistryController.create(this).apply {
-        performRestore(null)
-    }
-
-    private val lifecycleOwner: LifecycleOwner = ProcessLifecycleOwner.get()
+    private var controller: SavedStateRegistryController? = null
+    private var _lifecycleOwner: LifecycleOwner? = null
+    private var _controllerCreated = false
 
     override val lifecycle: Lifecycle
-        get() =
-            object : Lifecycle() {
-                override fun addObserver(observer: LifecycleObserver) {
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                }
-
-                override fun removeObserver(observer: LifecycleObserver) {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                }
-
-                override val currentState = State.INITIALIZED
+        get() = object : Lifecycle() {
+            override fun addObserver(observer: LifecycleObserver) {
+                getLifecycleOwner().lifecycle.addObserver(observer)
             }
 
+            override fun removeObserver(observer: LifecycleObserver) {
+                getLifecycleOwner().lifecycle.removeObserver(observer)
+            }
+
+            override val currentState = State.INITIALIZED
+        }
+
     override val savedStateRegistry: SavedStateRegistry
-        get() = controller.savedStateRegistry
+        get() = getController().savedStateRegistry
+
+    private fun getLifecycleOwner(): LifecycleOwner {
+        if (_lifecycleOwner == null) {
+            _lifecycleOwner = ProcessLifecycleOwner.get()
+        }
+        return _lifecycleOwner!!
+    }
+
+    private fun getController(): SavedStateRegistryController {
+        if (!_controllerCreated || controller == null) {
+            // Initialize after object construction to avoid null pointer during initialization
+            controller = SavedStateRegistryController.create(this).apply {
+                performRestore(null)
+            }
+            _controllerCreated = true
+        }
+        return controller!!
+    }
 
     companion object {
         val shared = EmptySavedStateRegistryOwner()

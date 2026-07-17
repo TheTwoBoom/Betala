@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
@@ -33,7 +32,7 @@ fun SettingsScreen(navController: NavController){
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
-            Header(modifier = Modifier.padding(top = 25.dp), text = stringResource(R.string.settings))
+            Text(modifier = Modifier.padding(top = 25.dp), text = stringResource(R.string.settings))
 
             LazyColumn(
                 modifier = Modifier.padding(top = 20.dp).weight(1f),

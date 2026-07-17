@@ -1,11 +1,6 @@
 package app.myhtl.betala.screens
 
-import ads_mobile_sdk.pr
-import android.R.attr.maxWidth
 import android.app.Activity
-import android.text.Editable
-import android.util.Log
-import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,36 +9,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
-import androidx.compose.foundation.layout.FlexAlignContent
-import androidx.compose.foundation.layout.FlexAlignItems
-import androidx.compose.foundation.layout.FlexBox
-import androidx.compose.foundation.layout.FlexDirection
-import androidx.compose.foundation.layout.FlexWrap
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -52,11 +33,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -64,7 +40,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
@@ -76,12 +51,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.SudokuViewModel
-import app.myhtl.betala.opensudoku.GameManager
-import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
-import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
-import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
-import com.google.android.libraries.ads.mobile.sdk.common.AdLoadResult
-import kotlinx.coroutines.launch
+import kotlin.math.sqrt
 
 
 data class SudokuActions(
@@ -242,12 +212,12 @@ fun TopRow(navController: NavController){
             }
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_outline_arrow_back),
+                painter = painterResource(id = R.drawable.arrow_back),
                 contentDescription = "Back",
                 modifier = Modifier.size(24.dp)
             )
         }
-        Header(text = "Lvl1")//Text muss später ersetzt werden
+        Text(text = "Lvl1")//Text muss später ersetzt werden
 
         Button(onClick = {}) {
             Text("more")
@@ -285,7 +255,7 @@ fun CreateSudoku(modifier: Modifier, rowCount: Int, cells: List<Int>, cellNotes:
             userScrollEnabled = false
         ) {
             itemsIndexed(cells) { index, value ->
-                val color = CalcColor(selectedCell, index, actions = actions)
+                val color = calcColor(selectedCell, index, actions = actions)
 
                 SudokuCell(
                     value = value,
@@ -300,9 +270,9 @@ fun CreateSudoku(modifier: Modifier, rowCount: Int, cells: List<Int>, cellNotes:
 }
 
 @Composable
-fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
+fun calcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
     val numbers = actions.getNumbers
-    val numbersSqrt = Math.sqrt(numbers.toDouble()).toInt()
+    val numbersSqrt = sqrt(numbers.toDouble()).toInt()
 
     if (actions.isPrinting) {
         return Color(0xFFFFFFFF)
@@ -336,15 +306,15 @@ fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
 @Composable
 fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActions, color:Color) {
     val numbers = actions.getNumbers
-    val numbersSqrt = Math.sqrt(numbers.toDouble()).toInt()
+    val numbersSqrt = sqrt(numbers.toDouble()).toInt()
 
     val column = i / numbers
     val row = i % numbers
 
-    val bigGridLine_vertical = if (row == 0) 0.dp else if (row % numbersSqrt == 0) 3.dp else 1.dp
-    val bigGridLine_horizontal = if (column == 0) 0.dp else if (column % numbersSqrt == 0) 3.dp else 1.dp
+    val bigGridLineVertical = if (row == 0) 0.dp else if (row % numbersSqrt == 0) 3.dp else 1.dp
+    val bigGridLineHorizontal = if (column == 0) 0.dp else if (column % numbersSqrt == 0) 3.dp else 1.dp
 
-    val bigGridLine_color = MaterialTheme.colorScheme.primary
+    val bigGridLineColor = MaterialTheme.colorScheme.primary
 
     val textColor =
         if (actions.isEditable(i)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
@@ -357,20 +327,20 @@ fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActio
             actions.setIndex(i)
         }
         .drawBehind {
-            if (bigGridLine_horizontal > 0.dp) {
+            if (bigGridLineHorizontal > 0.dp) {
                 drawLine(
-                    color = bigGridLine_color,
+                    color = bigGridLineColor,
                     start = Offset(0f, 0f),
                     end = Offset(size.width, 0f),
-                    strokeWidth = bigGridLine_horizontal.toPx()
+                    strokeWidth = bigGridLineHorizontal.toPx()
                 )
             }
-            if (bigGridLine_vertical > 0.dp) {
+            if (bigGridLineVertical > 0.dp) {
                 drawLine(
-                    color = bigGridLine_color,
+                    color = bigGridLineColor,
                     start = Offset(0f, 0f),
                     end = Offset(0f, size.height),
-                    strokeWidth = bigGridLine_vertical.toPx()
+                    strokeWidth = bigGridLineVertical.toPx()
                 )
             }
 
@@ -516,9 +486,9 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 Icon(
 
                     painter = if (actions.isNoteMode) {
-                        painterResource(id = R.drawable.edit_24px)
+                        painterResource(id = R.drawable.edit)
                     } else {
-                        painterResource(id = R.drawable.edit_off_24px)
+                        painterResource(id = R.drawable.edit_off)
                     },
                     contentDescription = "Notes"
                 )
@@ -530,7 +500,7 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 }
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ink_eraser_24px),
+                    painter = painterResource(id = R.drawable.ink_eraser),
                     contentDescription = "Erase"
                 )
             }
@@ -550,9 +520,9 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 Icon(
 
                     painter = if (actions.isNoteMode) {
-                        painterResource(id = R.drawable.edit_24px)
+                        painterResource(id = R.drawable.edit)
                     } else {
-                        painterResource(id = R.drawable.edit_off_24px)
+                        painterResource(id = R.drawable.edit_off)
                     },
                     contentDescription = "Notes"
                 )
@@ -564,7 +534,7 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
                 }
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ink_eraser_24px),
+                    painter = painterResource(id = R.drawable.ink_eraser),
                     contentDescription = "Erase"
                 )
             }
