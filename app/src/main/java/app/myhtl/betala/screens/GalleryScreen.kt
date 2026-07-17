@@ -90,7 +90,6 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
             GalleryManager.getFilteredSudokus(context, filters)
         }
     }
-    val loading = false
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
@@ -103,6 +102,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
         }
     }
 
+    // ARTapToPlace(sudokuList.first().games.first())
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
@@ -113,13 +113,14 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
             Header(
                 text = stringResource(R.string.gallery_header),
                 returnDest = AppDestinations.HOME.route,
-                navController = navController
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Placeholder") },
-                    onClick = {}
-                )
-            }
+                navController = navController,
+                menuItems = {
+                    DropdownMenuItem(
+                        text = { Text("Placeholder") },
+                        onClick = {}
+                    )
+                }
+            )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,7 +206,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                     }
                 }
             }
-            if (loading) {
+            if (GalleryManager.isLoading) {
                 Column(
                     Modifier
                         .padding(innerPadding)
@@ -219,16 +220,13 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                         .weight(1f)
                         .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    contentPadding = PaddingValues(10.dp),
+                    contentPadding = PaddingValues(top = 0.dp, start = 10.dp, end = 10.dp),
                 ) {
-                    if (sudokuList.isEmpty()) {
-                        item {
-                            Text("No sudokus found")
-                        }
-
-                    }
+                    if (sudokuList.isEmpty()) item { Text("No sudokus found") }
                     items(sudokuList) { sudoku ->
-                        OutlinedCard {
+                        OutlinedCard(
+                            modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
+                        ) {
                             ListItem(
                                 modifier = Modifier.padding(5.dp),
                                 onClick = {

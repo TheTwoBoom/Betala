@@ -3,17 +3,17 @@
     <string name="app_name">Betala</string>
     <string name="settings">Einstellungen</string>
     <string name="favorites">Favoriten</string>
-    <string name="random_level">Zufälliges Sudoku</string>
     <string name="home">Start</string>
+    <string name="play">Spielen</string>
     <string name="daily_challenge">Tägliche Challenge</string>
     <string name="select_level">Level auswählen</string>
     <string name="donate">Spenden</string>
-    <string name="greeting">Wilkommen zu Betala - Sudoku Variants</string>
+    <string name="greeting">Willkommen zurück!</string>
     <string name="donate_text">Magst du die App? Spende, um die Entwicklung zu unterstützen!</string>
     <string name="favorites_header">Deine Lieblings-Sudokus</string>
     <string name="store">Laden</string>
     <string name="gallery_header">Sudokus</string>
-    <string name="win_text">Du hast es gechafft!</string>
+    <string name="win_text">Du hast es geschafft!</string>
     <string name="back">zurück</string>
-    <string name="create_Sudoku">Sudoku erstellen</string>
+    <string name="new_sudoku" >Neues Sudoku</string>
 </resources>

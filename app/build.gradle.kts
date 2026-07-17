@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.arsceneview)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.ads.mobile.sdk)

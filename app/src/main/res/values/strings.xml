@@ -6,18 +6,18 @@
     <string name="favorites">Favorites</string>
     <string name="home">Home</string>
 
-    <string name="random_level">Random level</string>
+    <string name="play">Quick Game</string>
     <string name="daily_challenge">Daily challenge</string>
     <string name="select_level">Select level</string>
     <string name="donate">Donate</string>
-    <string name="greeting">Welcome to Betala - Sudoku Variants</string>
+    <string name="greeting">Welcome back!</string>
     <string name="donate_text">Enjoing the app? Consider donating to support development</string>
     <string name="favorites_header">Your favorite Sudokus</string>
     <string name="store">Store</string>
     <string name="gallery_header">Sudokus</string>
     <string name="win_text">You did it!</string>
     <string name="back">back</string>
-    <string name="create_Sudoku">create Sudoku</string>
+    <string name="new_sudoku">New Sudoku</string>
 
 
 </resources>

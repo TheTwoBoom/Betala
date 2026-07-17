@@ -4,6 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -31,66 +34,74 @@ import kotlin.collections.orEmpty
 
 object GalleryManager {
     var allSudokus: SnapshotStateList<GameManager.OpenSudoku> = SnapshotStateList()
-    suspend fun fetchAllSudokus(context: Context) = coroutineScope {
-        val predefinedFiles = context.assets.list("")?.filter { it.endsWith(".opensudoku") }.orEmpty()
-        val userFiles = context.filesDir.list()?.filter { it.endsWith(".opensudoku") }.orEmpty()
 
-        val sudokuJobs = buildList {
-            predefinedFiles.forEach { fileName ->
-                add(async { loadPredefinedSudoku(context, fileName) })
+    var isLoading by mutableStateOf(true)
+        private set
+
+    suspend fun fetchAllSudokus(context: Context) = coroutineScope {
+        isLoading = true
+
+        try {
+            val predefinedFiles = context.assets.list("")
+                ?.filter { it.endsWith(".opensudoku") }
+                .orEmpty()
+            val userFiles = context.filesDir.list()
+                ?.filter { it.endsWith(".opensudoku") }
+                .orEmpty()
+
+            val sudokuJobs = buildList {
+                predefinedFiles.forEach { fileName ->
+                    add(async { loadPredefinedSudoku(context, fileName) })
+                }
+                userFiles.forEach { fileName ->
+                    add(async { loadUserSudoku(context, fileName) })
+                }
             }
-            userFiles.forEach { fileName ->
-                add(async { loadUserSudoku(context, fileName) })
-            }
+
+            sudokuJobs.awaitAll()
+        } finally {
+            isLoading = false
         }
-        sudokuJobs.awaitAll()
     }
+
     fun getAllSudokus(context: Context): List<GameManager.OpenSudoku> {
-        if (allSudokus.isEmpty()) {
-            runBlocking { fetchAllSudokus(context) }
-        }
         return allSudokus
     }
-    fun getFavoriteSudokus(context: Context): List<GameManager.OpenSudoku> {
-        val activity = context as? Activity
-        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
-        val favorites = sharedPref?.getStringSet(
-            "favoriteSudokus", HashSet<String>()
-        )?.toMutableSet()
-        favorites?.add("")
-        val gameList: List<GameManager.OpenSudoku> = allSudokus.filter {
-            favorites?.contains(it.name)!!
-        }
-        return gameList
+
+    fun getFilteredSudokus(
+        context: Context,
+        filters: List<FilterOption>
+    ): List<GameManager.OpenSudoku> {
+        var list: List<GameManager.OpenSudoku> = getAllSudokus(context)
+        val fFilter = filters.firstOrNull { it.id == "favorite"}
+        val lFilter = filters.firstOrNull { it.id == "level" }
+
+        if (fFilter != null) { list = filterFavorites(fFilter, list, context) }
+        if (lFilter != null) { list = filterDifficulty(lFilter, list) }
+        // if () { list = filter }
+        // TODO: implement other filters
+
+        return list
     }
 
-    fun getFilteredSudokus(context: Context, filters: List<FilterOption>): List<GameManager.OpenSudoku> {
-        var fList: List<GameManager.OpenSudoku> = getAllSudokus(context)
-        val favoriteFilter = filters.firstOrNull { it.id == "favorite"}
-        val levelFilter = filters.firstOrNull { it.id == "level" }
-        when {
-            // TODO: implement favorites filter
-            levelFilter != null -> fList = filterDifficulty(levelFilter, fList)
-            // TODO: implement other filters
-        }
-
-        return fList
+    fun filterFavorites(filter: FilterOption, list: List<GameManager.OpenSudoku>, context: Context): List<GameManager.OpenSudoku> {
+        val sharedPref = (context as? Activity)?.getPreferences(Context.MODE_PRIVATE)
+        val favorites = sharedPref?.getStringSet("favoriteSudokus", HashSet<String>())
+            ?.toMutableSet()
+        return if (filter.options.first().isSelected) {
+            list.filter { favorites?.contains(it.name)!! }
+        } else list
     }
-
     fun filterDifficulty(filter: FilterOption, list: List<GameManager.OpenSudoku>): List<GameManager.OpenSudoku> {
-        var fList = list
         val selectedLevels = filter
             .options
             .filter { it.isSelected }
             .map { it.id }
             .toSet()
 
-        if (selectedLevels.isNotEmpty()) {
-            fList = fList.filter { sudoku ->
-                sudoku.level in selectedLevels
-            }
-        }
-        return fList
+        return if (selectedLevels.isNotEmpty()) {
+            list.filter { sudoku -> sudoku.level in selectedLevels }
+        } else list
     }
     suspend fun loadPredefinedSudoku(context: Context, fileName: String) {
         return withContext(Dispatchers.IO) {
