@@ -95,7 +95,6 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                 onClick = {
                     var generator = SudokuGenerator(numbers = 9)
                     // would else be empty
-                    generator.creatRandomSudoku()
                     var sudoku = GameManager.SudokuGame(generator.getRandomSudoku())
                     sudokuViewModel.currentGame = sudoku;
 

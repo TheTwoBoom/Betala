@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -285,16 +286,14 @@ fun CreateSudoku(modifier: Modifier, rowCount: Int, cells: List<Int>, cellNotes:
         ) {
             itemsIndexed(cells) { index, value ->
                 val color = CalcColor(selectedCell, index, actions = actions)
-                val textColor =
-                    if (actions.isEditable(index)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+
                 SudokuCell(
                     value = value,
                     cellNotes = cellNotes[index],
                     i = index,
                     actions = actions,
-                    color = color,
-                    textColor = textColor
-                ) //textcolor = CalcTextColor)
+                    color = color
+                )
             }
         }
 
@@ -314,7 +313,7 @@ fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
         return MaterialTheme.colorScheme.errorContainer
     }
     //selected?
-    if (selectedCell == index) return MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+    if (selectedCell == index) return MaterialTheme.colorScheme.secondaryContainer
     //same number as selected?
     else if(actions.sameValue(index)){
         return MaterialTheme.colorScheme.tertiaryContainer
@@ -335,7 +334,7 @@ fun CalcColor(selectedCell: Int, index: Int, actions: SudokuActions): Color{
 
 
 @Composable
-fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActions, color:Color, textColor: Color) {
+fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActions, color:Color) {
     val numbers = actions.getNumbers
     val numbersSqrt = Math.sqrt(numbers.toDouble()).toInt()
 
@@ -347,7 +346,8 @@ fun SudokuCell(value: Int, cellNotes: BooleanArray, i: Int, actions: SudokuActio
 
     val bigGridLine_color = MaterialTheme.colorScheme.primary
 
-
+    val textColor =
+        if (actions.isEditable(i)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
     BoxWithConstraints(
         modifier = Modifier
         .fillMaxSize()

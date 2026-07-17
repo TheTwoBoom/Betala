@@ -1,12 +1,14 @@
 package app.myhtl.betala
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.res.Configuration
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -27,13 +29,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GameManager
+import app.myhtl.betala.screens.CurrentDevice
 import app.myhtl.betala.screens.Destination
 import app.myhtl.betala.ui.theme.BetalaTheme
 import app.myhtl.betala.screens.GalleryScreen
@@ -52,6 +59,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+
+            val view = LocalView.current
+            val window = (view.context as? Activity)?.window
+
+            if(window != null){
+                val insets = WindowCompat.getInsetsController(window, view)
+                insets.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                if(CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT){
+                    insets.show(WindowInsetsCompat.Type.statusBars())
+
+                } else{
+                    insets.hide(WindowInsetsCompat.Type.statusBars())
+                }
+            }
+
+
             BetalaTheme {
                 BetalaApp()
             }

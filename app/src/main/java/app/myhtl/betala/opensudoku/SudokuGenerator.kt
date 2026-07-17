@@ -18,17 +18,22 @@ class SudokuGenerator (
         notes = Array(numbers) { Array(numbers) { BooleanArray(numbers) { true } } }
     }
     fun getRandomSudoku(): SnapshotStateList<Int>{
+        var isValid = false
+        //current solution for valid Sudokus without backtracking
+        while (isValid == false){
+            isValid = creatRandomFullySolvedSudoku()
+        }
+        //amount just temporary
+        removeRandomNumbers(numbers*2)
+
+
+
         var sudokuList: SnapshotStateList<Int> = mutableStateListOf()
         for(i in 0 until numbers*numbers){
             sudokuList.add(erg[i/numbers][i%numbers])
         }
         return sudokuList
     }
-
-    fun getSudokuString(): String{
-        return "674058902598273614123964857341596278762481593985327146436819725859742361217635489"
-    }
-
     fun removeNote(row: Int, column: Int, number: Int){
         if (number in 1..numbers) {
             notes[row][column][number-1] = false
@@ -68,7 +73,6 @@ class SudokuGenerator (
             return -1
         }
         var randomCellIndex: Int = (Math.floor(Math.random()*(possibleCells.size))).toInt()
-        //Error here:
         var randomCell = possibleCells.get(randomCellIndex)
         //println(randomCell)
         return randomCell
@@ -94,12 +98,7 @@ class SudokuGenerator (
         return randomNumber
     }
 
-    fun creatRandomSudoku(){
-        //difficulty and numbers in the Sudoku (change to parameter)
-        var shouldFill = 50
-        //numbers = 9
-        //numbersSqrt = Math.sqrt(num<bers.toDouble()).toInt()
-
+    fun creatRandomFullySolvedSudoku(): Boolean{
         reset()
 
         erg = Array(numbers) { IntArray(numbers) {0} }
@@ -112,7 +111,8 @@ class SudokuGenerator (
 
             if(randomCell == -1 || randomNumber == -1){
                 println("Fehler: keine passende Lösung gefunden!")
-                continue
+                //isValid?
+                return false
             }
 
             if(erg[randomCell/numbers][randomCell%numbers] == 0){
@@ -127,12 +127,13 @@ class SudokuGenerator (
             removeNotes(randomCell, randomNumber)
         }
 
-        for(i in 0 until numbers){
-            for(j in 0 until numbers){
-                print(erg[i][j].toString()+" ")
-            }
-            println()
-        }
+        //for(i in 0 until numbers){
+        //    for(j in 0 until numbers){
+        //        print(erg[i][j].toString()+" ")
+        //    }
+        //    println()
+        //}
+        return true
     }
 
 
@@ -154,5 +155,29 @@ class SudokuGenerator (
             }
             }
         }
+    }
+
+    fun removeRandomNumbers(amount: Int){
+        repeat(amount){
+            var randomCell = getRandomFilledCell()
+            erg[randomCell/numbers][randomCell%numbers] = 0
+        }
+    }
+
+    fun getRandomFilledCell(): Int{
+        var filledOutCells = mutableListOf<Int>()
+
+        for(i in 0 until numbers*numbers){
+            if(erg[i/numbers][i%numbers] != 0)
+                filledOutCells.add(i)
+        }
+
+
+        if(filledOutCells.isEmpty()){
+            return -1
+        }
+        var randomCellIndex: Int = (Math.floor(Math.random()*(filledOutCells.size))).toInt()
+        var randomCell = filledOutCells.get(randomCellIndex)
+        return randomCell
     }
 }
