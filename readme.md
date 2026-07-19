@@ -1,7 +1,7 @@
 # Betala - Sudoku Variants
 ![Android](https://img.shields.io/badge/Android%2012%2B-grey?style=for-the-badge&logo=android)
 ![Android Auto](https://img.shields.io/badge/Android%20Auto-grey?style=for-the-badge&logo=androidauto)
-![Google Play](https://img.shields.io/badge/available%20on-Google%20Play%20Store-%233DDC84?style=for-the-badge&logo=googleplay)
+![Github Releases](https://img.shields.io/badge/available%20on-Github%20Releases-black?style=for-the-badge&logo=github)
 
 
 Betala is the only sudoku app you'll ever need, implementing a modern **Material 3** UI, 
