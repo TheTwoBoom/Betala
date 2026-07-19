@@ -2,7 +2,10 @@ package app.myhtl.betala.opensudoku
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory.decodeFile
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,11 +14,17 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.print.PrintHelper
+import app.myhtl.betala.screens.CreateSudoku
+import app.myhtl.betala.screens.SudokuActions
+import app.myhtl.betala.utils.FilterOption
+import app.myhtl.betala.utils.captureComposable
 import app.myhtl.betala.utils.readTextFromUri
+import app.myhtl.betala.utils.useVirtualDisplay
 import com.google.crypto.tink.subtle.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -23,14 +32,11 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import java.io.BufferedReader
-import app.myhtl.betala.screens.CreateSudoku
-import app.myhtl.betala.screens.SudokuActions
-import app.myhtl.betala.utils.FilterOption
-import app.myhtl.betala.utils.captureComposable
-import app.myhtl.betala.utils.useVirtualDisplay
-import kotlin.collections.isNotEmpty
-import kotlin.collections.orEmpty
+import java.io.FileOutputStream
+import kotlin.math.sqrt
+
 
 object GalleryManager {
     var allSudokus: SnapshotStateList<GameManager.OpenSudoku> = SnapshotStateList()
@@ -59,9 +65,24 @@ object GalleryManager {
             }
 
             sudokuJobs.awaitAll()
-        } finally {
-            isLoading = false
+        } catch (exception: Exception) {
+            Log.e("GalleryManager", "Sudokus wurden nicht erfolgreich geladen", exception)
         }
+    }
+
+    suspend fun generatePreviews(context: Context) {
+        for (i in allSudokus.indices) {
+            val openSudoku = allSudokus[i]
+            for (game in openSudoku.games) {
+                withContext(Dispatchers.Main) {
+                    game.preview = createBitmapFromSudoku(context, game.data.toList())
+                }
+                yield()
+            }
+            // SnapshotStateList-Änderung triggern → UI aktualisiert sich
+            allSudokus[i] = openSudoku
+        }
+        isLoading = false
     }
 
     fun getAllSudokus(context: Context): List<GameManager.OpenSudoku> {
@@ -75,9 +96,11 @@ object GalleryManager {
         var list: List<GameManager.OpenSudoku> = getAllSudokus(context)
         val fFilter = filters.firstOrNull { it.id == "favorite"}
         val lFilter = filters.firstOrNull { it.id == "level" }
+        val aFilter = filters.firstOrNull { it.id == "author" }
 
         if (fFilter != null) { list = filterFavorites(fFilter, list, context) }
         if (lFilter != null) { list = filterDifficulty(lFilter, list) }
+        if (aFilter != null) { list = filterAuthor(aFilter, list) }
         // if () { list = filter }
         // TODO: implement other filters
 
@@ -103,17 +126,36 @@ object GalleryManager {
             list.filter { sudoku -> sudoku.level in selectedLevels }
         } else list
     }
+    fun filterAuthor(filter: FilterOption, list: List<GameManager.OpenSudoku>): List<GameManager.OpenSudoku> {
+        TODO()
+    }
     suspend fun loadPredefinedSudoku(context: Context, fileName: String) {
-        return withContext(Dispatchers.IO) {
-            val sudokuString = context.assets.open(fileName).bufferedReader().use(BufferedReader::readText)
-            GameManager.parseSudokuFile(sudokuString)?.let { allSudokus.add(it) }
+        val sudokuString = withContext(Dispatchers.IO) {
+            context.assets
+                .open(fileName)
+                .bufferedReader()
+                .use(BufferedReader::readText)
+        }
+
+        val sudoku = GameManager.parseSudokuFile(sudokuString)
+
+        withContext(Dispatchers.Main.immediate) {
+            sudoku?.let(allSudokus::add)
         }
     }
 
     suspend fun loadUserSudoku(context: Context, fileName: String) {
-        return withContext(Dispatchers.IO) {
-            val sudokuString = readTextFromUri(context, context.filesDir.resolve(fileName).toUri())
-            GameManager.parseSudokuFile(sudokuString)?.let { allSudokus.add(it) }
+        val sudokuString = withContext(Dispatchers.IO) {
+            readTextFromUri(
+                context,
+                context.filesDir.resolve(fileName).toUri()
+            )
+        }
+
+        val sudoku = GameManager.parseSudokuFile(sudokuString)
+
+        withContext(Dispatchers.Main.immediate) {
+            sudoku?.let(allSudokus::add)
         }
     }
 
@@ -135,40 +177,55 @@ object GalleryManager {
             }
         }
         outputStream.close()
-        runBlocking {loadUserSudoku(context, sudokuName)}
+        runBlocking { loadUserSudoku(context, sudokuName) }
     }
 
-    suspend fun createBitmapFromSudoku(context: Context, sudokuGame: GameManager.SudokuGame, size: DpSize = DpSize(800.dp, 800.dp)): ImageBitmap {
-        val bitmap = useVirtualDisplay(context) { display ->
-            captureComposable(
-                context = context,
-                size = size,
-                display = display
-            ) {
-                LaunchedEffect(Unit) {
-                    capture()
+    suspend fun createBitmapFromSudoku(context: Context, sudokuData: List<Int>, size: DpSize = DpSize(800.dp, 800.dp)): ImageBitmap {
+        var bitmap: ImageBitmap
+        var sudokuString = ""
+        sudokuData.forEach { sudokuString += it }
+        if (context.cacheDir?.list()?.contains("$sudokuString.webp") == true) {
+            println("Image was cached")
+            bitmap = decodeFile(context.cacheDir.path + "/" + "$sudokuString.webp").asImageBitmap()
+        //bitmap = ImageBitmap(800, 800)
+        } else {
+            bitmap = useVirtualDisplay(context) { display ->
+                captureComposable(
+                    context = context,
+                    size = size,
+                    display = display
+                ) {
+                    LaunchedEffect(Unit) {
+                        capture()
+                    }
+                    CreateSudoku(
+                        Modifier,
+                        rowCount = sqrt(sudokuData.size.toDouble()).toInt(),
+                        cells = sudokuData,
+                        cellNotes = List(81) { BooleanArray(9) { false } },
+                        actions = SudokuActions(
+                            setIndex = {},
+                            onNumberSelected = {},
+                            toggleNoteMode = {},
+                            validate = { true },
+                            isEditable = { false },
+                            sameValue = { false },
+                            isNoteMode = false,
+                            erase = {},
+                            isFinishedAndCorrect = true,
+                            // TODO: make the number variable
+                            getNumbers = 9,
+                            isPrinting = true
+                        ),
+                        selectedCell = -1,
+                    )
                 }
-                CreateSudoku(
-                    Modifier,
-                    rowCount = sudokuGame.size(),
-                    cells = sudokuGame.data,
-                    cellNotes = sudokuGame.noteData,
-                    actions = SudokuActions(
-                        setIndex = {},
-                        onNumberSelected = {},
-                        toggleNoteMode = {},
-                        validate = { true },
-                        isEditable = { false },
-                        sameValue = { false },
-                        isNoteMode = false,
-                        erase = {},
-                        isFinishedAndCorrect = true,
-                        // TODO: make the number variable
-                        getNumbers = 9,
-                        isPrinting = true
-                    ),
-                    selectedCell = -1,
-                )
+            }
+            val path = context.cacheDir.path + "/" + "$sudokuString.webp"
+            withContext(Dispatchers.IO) {
+                val fileOutputStream = FileOutputStream(path)
+                bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 50, fileOutputStream)
+                fileOutputStream.close()
             }
         }
         return bitmap

@@ -1,23 +1,30 @@
 package app.myhtl.betala.opensudoku
 
+import android.util.Log
 import android.util.Xml
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.graphics.ImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlin.math.sqrt
 
+
 object GameManager {
     class SudokuGame(
         val data: SnapshotStateList<Int>,
+        var preview: ImageBitmap,
         val changed: MutableList<Int> = MutableList(data.size) {0},
         val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(9)},
         var isFullyFilled: Boolean = false,
         var filledCells: Int = 0,
         var isFullyCorrect: Boolean = false
     ) {
-        public fun size(): Int = sqrt(data.size.toDouble()).toInt()
-        public fun index(x: Int, y: Int): Int = y * size() + x
+        fun size(): Int = sqrt(data.size.toDouble()).toInt()
+        fun index(x: Int, y: Int): Int = y * size() + x
 
         fun changeValue(index: Int, value: Int) {
             if(this.getOriginal()[index] == 0) {
@@ -49,7 +56,7 @@ object GameManager {
 
         fun toggleNote(index: Int, value: Int) {
             if (data[index] == 0) {
-                var noteArray: BooleanArray = noteData[index]
+                val noteArray: BooleanArray = noteData[index]
                 noteArray[value - 1] = !noteData[index][value - 1]
                 noteData[index] = noteArray.copyOf()
             }
@@ -144,7 +151,7 @@ object GameManager {
         val games: List<SudokuGame>
     )
 
-    fun parseSudokuFile(xmlString: String): OpenSudoku? {
+    suspend fun parseSudokuFile(xmlString: String): OpenSudoku? {
         val parser: XmlPullParser = Xml.newPullParser()
         val inputStream: InputStream = ByteArrayInputStream(xmlString.toByteArray())
 
@@ -170,17 +177,34 @@ object GameManager {
                         "source" -> source = parser.nextText()
                         "sourceURL" -> sourceURL = parser.nextText()
                         "game" -> {
-                            val data = parser.getAttributeValue(null, "data")
+                            val encodedGame =
+                                parser.getAttributeValue(null, "data")
+
                             try {
-                                val gameChars = data.toCharArray()
-                                val gameList = SnapshotStateList(81) { 0 }
-                                for (x in 0..8) {
-                                    for (y in 0..8) {
-                                        gameList[x * 9 + y] = gameChars[x * 9 + y] - '0'
-                                    }
+                                requireNotNull(encodedGame) {
+                                    "Das Attribut 'data' fehlt."
                                 }
-                                games.add(SudokuGame(gameList))
-                            } catch (_: Exception) {
+                                require(encodedGame.length == 81) {
+                                    "Erwartet wurden 81 Zeichen, erhalten: ${encodedGame.length}"
+                                }
+                                require(encodedGame.all { it in '0'..'9' }) {
+                                    "Das Sudoku enthält ungültige Zeichen."
+                                }
+
+                                val parsedValues = encodedGame.map { character ->
+                                    character.digitToInt()
+                                }
+                                val game = withContext(Dispatchers.Main.immediate) {
+                                    val gameList = mutableStateListOf<Int>().apply {
+                                        addAll(parsedValues)
+                                    }
+                                    SudokuGame(gameList, ImageBitmap(1, 1))
+                                }
+
+                                games.add(game)
+                                Log.d("GameManager", "Sudoku added")
+                            } catch (exception: Exception) {
+                                Log.e("GameManager", "Sudoku konnte nicht geladen werden", exception)
                                 return null
                             }
                         }

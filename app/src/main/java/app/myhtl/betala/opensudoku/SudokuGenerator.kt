@@ -1,13 +1,12 @@
 package app.myhtl.betala.opensudoku
 
-import ads_mobile_sdk.fe
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import kotlin.math.sqrt
 
 class SudokuGenerator (
     private var numbers: Int,
-    private var numbersSqrt: Int = Math.sqrt(numbers.toDouble()).toInt(),
+    private var numbersSqrt: Int = sqrt(numbers.toDouble()).toInt(),
     private var erg: Array<IntArray> = Array(numbers){ IntArray(numbers) },
     private var notes: Array<Array<BooleanArray>> = Array(numbers) { Array(numbers){BooleanArray(numbers) {true} } },
 

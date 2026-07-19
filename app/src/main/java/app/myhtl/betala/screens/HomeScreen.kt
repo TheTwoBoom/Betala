@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
@@ -77,7 +76,6 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                     fontFamily = FontFamily(Font(R.font.majormonodisplay)),
                 )
             },
-            menuItems = {},
             leftButton = {},
             rightButton = {
                 IconButton(
@@ -92,7 +90,7 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
         )
         SudokuCarousel(
             text = "Sudokus of the Day",
-            items = GalleryManager.getAllSudokus(context),
+            items = GalleryManager.allSudokus,
             navController = navController,
             sudokuViewModel = sudokuViewModel,
             isLoading = GalleryManager.isLoading
@@ -103,8 +101,8 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                 .clickable(true) {
                     val generator = SudokuGenerator(numbers = 9)
                     // would else be empty
-                    var sudoku = GameManager.SudokuGame(generator.getRandomSudoku())
-                    sudokuViewModel.currentGame = sudoku;
+                    val sudoku = GameManager.SudokuGame(generator.getRandomSudoku(), ImageBitmap(800, 800))
+                    sudokuViewModel.currentGame = sudoku
 
                     navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                 }
@@ -154,8 +152,8 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                     .clickable(true) {
                         val numbers = 9
                         val sudoku =
-                            GameManager.SudokuGame(SnapshotStateList(numbers * numbers) { 0 })
-                        sudokuViewModel.currentGame = sudoku;
+                            GameManager.SudokuGame(SnapshotStateList(numbers * numbers) { 0 }, ImageBitmap(800, 800))
+                        sudokuViewModel.currentGame = sudoku
                         navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                     }
             ) {

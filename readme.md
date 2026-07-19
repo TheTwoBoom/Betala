@@ -29,4 +29,4 @@ This project was built using
 - Material UI 3
 - Various Android APIs
 
-AI was only used for commit messages and tips regarding best practices
+AI was only used for commit messages, minor bugfixes and tips regarding best practices

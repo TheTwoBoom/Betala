@@ -3,50 +3,60 @@ package app.myhtl.betala.screens
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import app.myhtl.betala.AppAdditionalDestinations
@@ -134,9 +144,9 @@ fun ARTapToPlace(sudokuGame: GameManager.SudokuGame) {
 fun Header(
     modifier: Modifier = Modifier,
     text: String,
-    returnDest: String = "",
+    returnDest: String = "home",
     navController: NavController,
-    menuItems: @Composable (ColumnScope.() -> Unit),
+    popup: MutableState<Boolean> = remember { mutableStateOf(false) },
     leftButton: @Composable (RowScope.() -> Unit) = {
         IconButton(
             onClick = { navController.navigate(returnDest) },
@@ -148,22 +158,7 @@ fun Header(
             )
         }
     },
-    rightButton: @Composable (RowScope.() -> Unit) = {
-        var expanded by remember { mutableStateOf(false) }
-        Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
-            IconButton(
-                onClick = { expanded = !expanded },
-                shapes = IconButtonDefaults.shapes()
-            ) {
-                Icon(painterResource(R.drawable.more_vert), "Dropdown")
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                content = menuItems
-            )
-        }
-    },
+    rightButton: @Composable (RowScope.() -> Unit)? = null,
     textComposable: @Composable (RowScope.() -> Unit) = {
         Text(
             text = text,
@@ -172,6 +167,12 @@ fun Header(
         )
     },
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
+    if (popup.value) {
+        AboutDialog { popup.value = false }
+    }
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -179,7 +180,31 @@ fun Header(
     ) {
         leftButton()
         textComposable()
-        rightButton()
+        if (rightButton != null) {
+            rightButton()
+        } else {
+            Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+                IconButton(
+                    onClick = { expanded = !expanded },
+                    shapes = IconButtonDefaults.shapes()
+                ) {
+                    Icon(painterResource(R.drawable.more_vert), "Dropdown")
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    content = {
+                        DropdownMenuItem(
+                            text = { Text("About Betala") },
+                            onClick = {
+                                expanded = false
+                                popup.value = true
+                            }
+                        )
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -187,7 +212,7 @@ fun Header(
 @Composable
 fun SudokuCarousel(
     text: String,
-    items: List<GameManager.OpenSudoku>,
+    items: SnapshotStateList<GameManager.OpenSudoku>,
     navController: NavController,
     sudokuViewModel: SudokuViewModel,
     isLoading: Boolean = false,
@@ -217,8 +242,8 @@ fun SudokuCarousel(
             if (isLoading || i !in items.indices) {
                 Box(
                     modifier = Modifier
-                        .height(205.dp)
-                        .width(400.dp)
+                        .fillMaxWidth()
+                        .aspectRatio(1.15f)
                         .maskClip(MaterialTheme.shapes.extraLarge)
                         .background(
                             color = MaterialTheme.colorScheme.surfaceVariant,
@@ -232,19 +257,21 @@ fun SudokuCarousel(
             } else {
                 val item = items[i]
                 val colorStops = arrayOf(
-                    0.0f to Color.Yellow,
-                    0.2f to Color.Red,
-                    1f to Color.Blue
+                    0.0f to Color(139, 222, 218),
+                    0.25f to Color(67, 173, 208),
+                    0.5f to Color(153, 142, 224),
+                    0.75f to Color(225, 125, 194),
+                    1f to Color(239, 147, 147)
                 )
 
                 Box(
                     modifier = Modifier
-                        .height(205.dp)
-                        .width(400.dp)
+                        .fillMaxWidth()
+                        .aspectRatio(1.15f)
                         .maskClip(MaterialTheme.shapes.extraLarge)
                         .background(
                             Brush.horizontalGradient(colorStops = colorStops),
-                            alpha = 0.65f
+                            alpha = 1f
                         )
                         .clickable(true) {
                             if (item.games.isNotEmpty()) {
@@ -253,11 +280,16 @@ fun SudokuCarousel(
                             }
                         }
                 ) {
-                    Column {
-                        Icon(
-                            modifier = Modifier.fillMaxSize(),
-                            painter = painterResource(R.drawable.numbers),
-                            contentDescription = "Sudoku"
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(12.dp)
+                    ) {
+                        Image(
+                            modifier = Modifier.fillMaxSize(0.75f),
+                            bitmap = item.games[0].preview,
+                            contentDescription = "Sudoku Preview",
+                            contentScale = ContentScale.Fit
                         )
                         Text(
                             text = item.name + " by " + item.author,
@@ -297,6 +329,55 @@ fun Donate(context: Context) {
                 text = stringResource(R.string.donate),
                 fontSize = 16.sp,
             )
+        }
+    }
+}
+
+@Composable
+fun AboutDialog(
+    onDismissRequest: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = { onDismissRequest() },
+        DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        // Draw a rectangle shape with rounded corners inside the dialog
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "BETALA",
+                    modifier = Modifier.padding(8.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontSize = 48.sp,
+                    fontFamily = FontFamily(Font(R.font.majormonodisplay)),
+                )
+                Text(
+                    text = "Betala v0.0.1 \n" +
+                            "Copyright © 2026 by the Betala Developers",
+                    modifier = Modifier.padding(8.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = { onDismissRequest() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Done")
+                    }
+                }
+            }
         }
     }
 }
