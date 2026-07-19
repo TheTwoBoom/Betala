@@ -271,7 +271,7 @@ fun SudokuCarousel(
                         .maskClip(MaterialTheme.shapes.extraLarge)
                         .background(
                             Brush.horizontalGradient(colorStops = colorStops),
-                            alpha = 1f
+                            alpha = 0.75f
                         )
                         .clickable(true) {
                             if (item.games.isNotEmpty()) {
