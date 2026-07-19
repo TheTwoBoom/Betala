@@ -22,7 +22,9 @@ The APK can be installed on most Android 12+ devices ([Tutorial](https://www.wik
 - Printing Sudokus via Android's printing dialog
 
 ## Screenshots
+<img height="500" alt="Bildschirmfoto vom 2026-07-20 00-00-26" src="https://github.com/user-attachments/assets/50438653-44c8-45ef-b0aa-28ebeb101fc1" />
 <img height="500" alt="Bildschirmfoto vom 2026-07-19 23-23-33" src="https://github.com/user-attachments/assets/edf0bf14-5df5-40cd-955b-1369ae514fe0" />
+<img height="500" alt="Bildschirmfoto vom 2026-07-19 23-23-24" src="https://github.com/user-attachments/assets/a51d553c-42fa-4638-84c0-b9cc910794ca" />
 
 
 ## Used Libraries/Software
