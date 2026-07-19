@@ -27,7 +27,7 @@ The APK can be installed on most Android 12+ devices ([Tutorial](https://www.wik
 <img height="500" alt="Bildschirmfoto vom 2026-07-19 23-23-24" src="https://github.com/user-attachments/assets/a51d553c-42fa-4638-84c0-b9cc910794ca" />
 
 ## Demo
-<video src="demo.mp4" height="500"></video>
+https://github.com/user-attachments/assets/45edaf7e-6f46-43bb-be6d-3e181c2cb755
 
 ## Used Libraries/Software
 This project was built using
