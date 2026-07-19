@@ -38,7 +38,7 @@ class SudokuGenerator (
             notes[row][column][number-1] = false
         }
         else{
-            println("keine valide Nummer: " + number)
+            println("keine valide Nummer: $number")
         }
     }
 

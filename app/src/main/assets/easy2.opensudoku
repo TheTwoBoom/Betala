@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opensudoku>
+  <name>Easy One</name>
+  <author>someone</author>
+  <description></description>
+  <comment></comment>
+  <created>2026-06-03 17:55</created>
+  <source>opensudoku-web-generator</source>
+  <level>easy</level>
+  <sourceURL>http://opensudoku.moire.org/#generated-puzzles</sourceURL>
+  <game data="703802000200000084008001700005004300002700509000020008080503210009200800000008000" />
+  <game data="000752900009010080070009351050003000800201000901005000000004603004100000700020400" />
+  <game data="090407301603500009000000020070800600000100040000000002008003200036010007109750008" />
+</opensudoku>

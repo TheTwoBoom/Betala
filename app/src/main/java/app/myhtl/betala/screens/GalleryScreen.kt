@@ -55,6 +55,7 @@ import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GalleryManager.createBitmapFromSudoku
+import app.myhtl.betala.opensudoku.GalleryManager.generateAuthorFilters
 import app.myhtl.betala.utils.FilterEntry
 import app.myhtl.betala.utils.FilterOption
 import kotlinx.coroutines.Dispatchers
@@ -76,11 +77,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                 FilterEntry("medium", "Medium", false),
                 FilterEntry("hard", "Hard", false)
             )),
-            FilterOption("author", "Author", mutableStateListOf(
-                FilterEntry("easy", "Easy", false),
-                FilterEntry("medium", "Medium", false),
-                FilterEntry("hard", "Hard", false)
-            ))
+            FilterOption("author", "Author", generateAuthorFilters())
         )
     }
     val sudokuList by remember(filters) {

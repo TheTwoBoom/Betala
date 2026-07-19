@@ -8,6 +8,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -21,6 +22,7 @@ import androidx.core.net.toUri
 import androidx.print.PrintHelper
 import app.myhtl.betala.screens.CreateSudoku
 import app.myhtl.betala.screens.SudokuActions
+import app.myhtl.betala.utils.FilterEntry
 import app.myhtl.betala.utils.FilterOption
 import app.myhtl.betala.utils.captureComposable
 import app.myhtl.betala.utils.readTextFromUri
@@ -127,8 +129,26 @@ object GalleryManager {
         } else list
     }
     fun filterAuthor(filter: FilterOption, list: List<GameManager.OpenSudoku>): List<GameManager.OpenSudoku> {
-        TODO()
+        val selectedAuthors = filter
+            .options
+            .filter { it.isSelected }
+            .map { it.id }
+            .toSet()
+        return if (selectedAuthors.isNotEmpty()) {
+            list.filter { sudoku -> sudoku.author in selectedAuthors }
+        } else list
     }
+
+    fun generateAuthorFilters(): SnapshotStateList<FilterEntry> {
+        val authorList = mutableStateListOf<FilterEntry>()
+        allSudokus.forEach { s ->
+            if (authorList.none { it.label == s.author }) {
+                authorList.add(FilterEntry(s.author, s.author, false))
+            }
+        }
+        return authorList
+    }
+
     suspend fun loadPredefinedSudoku(context: Context, fileName: String) {
         val sudokuString = withContext(Dispatchers.IO) {
             context.assets

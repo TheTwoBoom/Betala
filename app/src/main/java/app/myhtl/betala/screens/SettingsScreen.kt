@@ -24,20 +24,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.myhtl.betala.R
+import app.myhtl.betala.utils.SettingUtils
 
 
 @Composable
 fun SettingsScreen(navController: NavController){
     val settings = listOf(
-        "id" to "Setting1",
-        "id" to "Setting2",
-        "id" to "Setting3",
-        "id" to "Setting4",
-        "id" to "Setting5",
-        "id" to "Setting6",
+        "darkmode" to "Force Dark mode",
+        "notemode" to "Disable Note mode",
+        "validate" to "Disable Sudoku Validation",
     )
     val context = LocalContext.current
 
@@ -65,14 +64,16 @@ fun SettingsScreen(navController: NavController){
                 contentPadding = PaddingValues(15.dp)
             ){
                 items(settings) { setting ->
+                    val utils = SettingUtils(context)
                     val id = setting.first
                     val displayText = setting.second
-                    var checked by remember { mutableStateOf(true) }
+                    var checked by remember { mutableStateOf(utils.getBool(id)!!) }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = displayText,
@@ -82,12 +83,19 @@ fun SettingsScreen(navController: NavController){
                             checked = checked,
                             onCheckedChange = {
                                 checked = !checked
+                                utils.setBool(id, checked)
                             }
                         )
                     }
                 }
             }
-            Donate(context)
+            Text(
+                text = "Betala v0.0.1 \n" +
+                        "Copyright © 2026 by the Betala Developers",
+                modifier = Modifier.padding(8.dp),
+                textAlign = TextAlign.Center
+            )
+            //Donate(context)
         }
 
 

@@ -5,7 +5,7 @@
 
 
 Betala is the only sudoku app you'll ever need, implementing a modern **Material 3** UI, 
-the **OpenSudoku** file format and a boatload of sudoku variants
+the **OpenSudoku** file format and (still WIP) a boatload of sudoku variants
 
 ## Quick Start
 Download the latest version from the [Releases](https://github.com/TheTwoBoom/Betala/releases) page\
@@ -19,6 +19,7 @@ The APK can be installed on most Android 12+ devices ([Tutorial](https://www.wik
 - Modern and sleek Material 3 UI
 - Import Sudokus from .opensudoku files
 - Efficient & fast Sudoku Generator
+- Printing Sudokus via Android's printing dialog
 
 ## Screenshots
 [Placeholder]
