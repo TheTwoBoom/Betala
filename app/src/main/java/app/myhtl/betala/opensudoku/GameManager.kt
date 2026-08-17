@@ -16,13 +16,17 @@ import kotlin.math.sqrt
 
 object GameManager {
     class SudokuGame(
-        val name: String = "?",
         val data: SnapshotStateList<Int>,
+        var preview: ImageBitmap = ImageBitmap(
+            width = 1,
+            height = 1
+        ),
         val size: Int = sqrt(data.size.toDouble()).toInt(),
         val boxWidth: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
         val boxHeight: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
         val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(sqrt(data.size.toDouble()).toInt())},
         var isFullyCorrect: Boolean = false,
+        val name: String = "?",
         ) {
         val originalList = data.toList()
 

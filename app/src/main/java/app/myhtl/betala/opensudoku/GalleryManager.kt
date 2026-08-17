@@ -35,9 +35,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.BufferedReader
-import app.myhtl.betala.screens.SudokuActions
 import app.myhtl.betala.screens.SudokuCanvas
-import app.myhtl.betala.utils.FilterOption
 import app.myhtl.betala.utils.captureComposable
 import app.myhtl.betala.utils.useVirtualDisplay
 import kotlin.collections.isNotEmpty
@@ -226,12 +224,12 @@ object GalleryManager {
                     }
                     SudokuCanvas(
                         modifier = Modifier,
-                        cells = sudokuGame.data,
-                        cellNotes = sudokuGame.noteData,
+                        cells = sudokuData,
+                        cellNotes = List(81) { BooleanArray(9) { false } },
                         actions = SudokuActions(
                             // TODO: make the number variable
                             getNumbers = 9,
-                            originalNumbers = sudokuGame.data.map{ it != 0 }
+                            originalNumbers = sudokuData.map{ it != 0 }
                         ),
                         selectedCell = -1,
                         selectedCells = emptySet()

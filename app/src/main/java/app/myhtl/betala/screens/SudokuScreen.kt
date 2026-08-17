@@ -115,7 +115,7 @@ data class TimerActions(
 @Composable
 fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
 
-    Z.updateIsFinishedAndCorrect()
+    sudokuViewModel.updateIsFinishedAndCorrect()
     LaunchedEffect(sudokuViewModel.isFinishedAndCorrect) {
         if (sudokuViewModel.isFinishedAndCorrect) {
             navController.navigate(AppAdditionalDestinations.WINSCREEN.route) {

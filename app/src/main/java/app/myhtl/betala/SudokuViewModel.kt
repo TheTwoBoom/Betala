@@ -6,11 +6,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.myhtl.betala.opensudoku.Difficulty
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.opensudoku.Variant
 import kotlinx.coroutines.Job

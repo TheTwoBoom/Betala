@@ -72,7 +72,6 @@ fun SetSudokuRulesScreen(
             Header(
                 text = stringResource(R.string.setRules_header),
                 navController = navController,
-                menuItems = { }
             )
 
             Column(
