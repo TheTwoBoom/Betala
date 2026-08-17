@@ -1,15 +1,16 @@
 package app.myhtl.betala.ui.theme
-import android.os.Build
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 @Immutable
 data class ExtendedColorScheme(
@@ -244,6 +245,59 @@ private val highContrastDarkColorScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
 )
 
+val extendedLight = ExtendedColorScheme(
+  customColor1 = ColorFamily(
+  customColor1Light,
+  onCustomColor1Light,
+  customColor1ContainerLight,
+  onCustomColor1ContainerLight,
+  ),
+)
+
+val extendedDark = ExtendedColorScheme(
+  customColor1 = ColorFamily(
+  customColor1Dark,
+  onCustomColor1Dark,
+  customColor1ContainerDark,
+  onCustomColor1ContainerDark,
+  ),
+)
+
+val extendedLightMediumContrast = ExtendedColorScheme(
+  customColor1 = ColorFamily(
+  customColor1LightMediumContrast,
+  onCustomColor1LightMediumContrast,
+  customColor1ContainerLightMediumContrast,
+  onCustomColor1ContainerLightMediumContrast,
+  ),
+)
+
+val extendedLightHighContrast = ExtendedColorScheme(
+  customColor1 = ColorFamily(
+  customColor1LightHighContrast,
+  onCustomColor1LightHighContrast,
+  customColor1ContainerLightHighContrast,
+  onCustomColor1ContainerLightHighContrast,
+  ),
+)
+
+val extendedDarkMediumContrast = ExtendedColorScheme(
+  customColor1 = ColorFamily(
+  customColor1DarkMediumContrast,
+  onCustomColor1DarkMediumContrast,
+  customColor1ContainerDarkMediumContrast,
+  onCustomColor1ContainerDarkMediumContrast,
+  ),
+)
+
+val extendedDarkHighContrast = ExtendedColorScheme(
+  customColor1 = ColorFamily(
+  customColor1DarkHighContrast,
+  onCustomColor1DarkHighContrast,
+  customColor1ContainerDarkHighContrast,
+  onCustomColor1ContainerDarkHighContrast,
+  ),
+)
 
 @Immutable
 data class ColorFamily(
@@ -259,20 +313,24 @@ val extra_scheme = ColorFamily(
 
 @Composable
 fun BetalaTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
-  val colorScheme = when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-          val context = LocalContext.current
-          if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
-      
-      darkTheme -> darkScheme
-      else -> lightScheme
-  }
+    val context = LocalContext.current
+    val forceDarkMode = (context as? Activity)
+        ?.getPreferences(Activity.MODE_PRIVATE)
+        ?.getBoolean("darkmode", false) ?: false
+
+    val darkTheme = if (forceDarkMode) true else isSystemInDarkTheme()
+
+    val colorScheme = if (darkTheme) darkScheme else lightScheme
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
+    }
 
   MaterialTheme(
     colorScheme = colorScheme,

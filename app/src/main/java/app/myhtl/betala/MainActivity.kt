@@ -2,14 +2,12 @@ package app.myhtl.betala
 
 import android.app.Activity
 import android.content.res.Configuration
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -31,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -45,7 +44,6 @@ import app.myhtl.betala.screens.SudokuScreen
 import app.myhtl.betala.screens.WinScreen
 import com.google.android.libraries.ads.mobile.sdk.MobileAds
 import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -74,15 +72,19 @@ class MainActivity : ComponentActivity() {
                 BetalaApp()
             }
         }
-        val backgroundScope = CoroutineScope(Dispatchers.IO)
-        backgroundScope.launch {
-            // Initialize GMA Next-Gen SDK on a background thread.
+        lifecycleScope.launch(Dispatchers.IO) {
             MobileAds.initialize(
                 this@MainActivity,
-                InitializationConfig.Builder("ca-app-pub-3940256099942544~3347511713").build()
+                InitializationConfig.Builder(
+                    "ca-app-pub-3940256099942544~3347511713"
+                ).build()
             ) {}
+        }
+
+        lifecycleScope.launch {
             if (GalleryManager.allSudokus.isEmpty()) {
-                GalleryManager.fetchAllSudokus(applicationContext)
+                GalleryManager.fetchAllSudokus(this@MainActivity)
+                GalleryManager.generatePreviews(this@MainActivity)
             }
         }
     }

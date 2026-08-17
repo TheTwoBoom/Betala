@@ -1,15 +1,18 @@
 package app.myhtl.betala.opensudoku
 
-import ads_mobile_sdk.nu
+import android.util.Log
 import android.util.Xml
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.graphics.ImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlin.math.sqrt
+
 
 object GameManager {
     class SudokuGame(
@@ -168,7 +171,7 @@ object GameManager {
         val games: List<SudokuGame>
     )
 
-    fun parseSudokuFile(xmlString: String): OpenSudoku? {
+    suspend fun parseSudokuFile(xmlString: String): OpenSudoku? {
         val parser: XmlPullParser = Xml.newPullParser()
         val inputStream: InputStream = ByteArrayInputStream(xmlString.toByteArray())
 
@@ -194,18 +197,34 @@ object GameManager {
                         "source" -> source = parser.nextText()
                         "sourceURL" -> sourceURL = parser.nextText()
                         "game" -> {
-                            val data = parser.getAttributeValue(null, "data")
+                            val encodedGame =
+                                parser.getAttributeValue(null, "data")
+
                             try {
-                                val gameChars = data.toCharArray()
-                                val numbers = sqrt(gameChars.size.toDouble()).toInt()
-                                val gameList = SnapshotStateList(gameChars.size) { 0 }
-                                for (x in 0 until numbers) {
-                                    for (y in 0 until numbers) {
-                                        gameList[x * numbers + y] = gameChars[x * numbers + y] - '0'
-                                    }
+                                requireNotNull(encodedGame) {
+                                    "Das Attribut 'data' fehlt."
                                 }
-                                games.add(SudokuGame(data = gameList, name = name))
-                            } catch (_: Exception) {
+                                require(encodedGame.length == 81) {
+                                    "Erwartet wurden 81 Zeichen, erhalten: ${encodedGame.length}"
+                                }
+                                require(encodedGame.all { it in '0'..'9' }) {
+                                    "Das Sudoku enthält ungültige Zeichen."
+                                }
+
+                                val parsedValues = encodedGame.map { character ->
+                                    character.digitToInt()
+                                }
+                                val game = withContext(Dispatchers.Main.immediate) {
+                                    val gameList = mutableStateListOf<Int>().apply {
+                                        addAll(parsedValues)
+                                    }
+                                    SudokuGame(gameList, ImageBitmap(1, 1))
+                                }
+
+                                games.add(game)
+                                Log.d("GameManager", "Sudoku added")
+                            } catch (exception: Exception) {
+                                Log.e("GameManager", "Sudoku konnte nicht geladen werden", exception)
                                 return null
                             }
                         }

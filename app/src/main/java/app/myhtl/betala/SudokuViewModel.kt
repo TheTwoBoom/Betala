@@ -1,12 +1,16 @@
 package app.myhtl.betala
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.myhtl.betala.opensudoku.Difficulty
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.opensudoku.Variant
 import kotlinx.coroutines.Job
@@ -14,12 +18,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import app.myhtl.betala.utils.SettingUtils
+import kotlinx.coroutines.launch
 
 enum class SudokuMode{
     GENERATOR,
     CREATOR
 }
-class SudokuViewModel : ViewModel() {
+class SudokuViewModel(application: Application) : AndroidViewModel(application) {
     var sudokuMode by mutableStateOf(SudokuMode.GENERATOR)
     var difficulty by mutableStateOf(Difficulty.Easy)
     //var size by mutableStateOf(Size.Classic) // not needed
@@ -35,6 +41,17 @@ class SudokuViewModel : ViewModel() {
     var isFinishedAndCorrect by mutableStateOf(false)
     var lifeCount by mutableIntStateOf(3)
     var errorArray = BooleanArray(gameSize*gameSize){false}
+
+    private val context get() = getApplication<Application>()
+
+    /** Check if note mode is disallowed by settings */
+    private val isNoteModeDisabled: Boolean
+        get() = SettingUtils(context).getBool("notemode") == true
+
+    /** Check if validation is disabled by settings */
+    private val isValidationDisabled: Boolean
+        get() = SettingUtils(context).getBool("notemode") == true
+
 
     //timer
     private val _seconds = MutableStateFlow(0)
@@ -88,7 +105,7 @@ class SudokuViewModel : ViewModel() {
 
     fun onNumberSelected(number: Int){
         //überprüft, ob die Zahl eine fix vorgegebene Zahl ist
-        if(!isNoteMode) {
+        if(!isNoteMode || isNoteModeDisabled) {
             currentGame?.changeValue(selectedIndex, number)
             currentGame?.changeValues(selectedIndices, number)
 
@@ -97,12 +114,14 @@ class SudokuViewModel : ViewModel() {
             currentGame?.toggleNote(selectedIndex, number)
             currentGame?.toggleNotes(selectedIndices, number)
         }
-
         updateIsFinishedAndCorrect()
     }
 
-    fun toggleNoteMode(){
-        isNoteMode = !isNoteMode
+    fun toggleNoteMode() {
+        // If note mode is disabled in settings, prevent toggling it on
+        if (!isNoteModeDisabled) {
+            isNoteMode = !isNoteMode
+        }
     }
 
     fun eraseCell(){

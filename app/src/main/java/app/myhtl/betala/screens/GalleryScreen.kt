@@ -34,8 +34,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MenuDefaults
@@ -57,6 +55,7 @@ import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.opensudoku.GalleryManager.createBitmapFromSudoku
+import app.myhtl.betala.opensudoku.GalleryManager.generateAuthorFilters
 import app.myhtl.betala.utils.FilterEntry
 import app.myhtl.betala.utils.FilterOption
 import kotlinx.coroutines.Dispatchers
@@ -78,11 +77,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                 FilterEntry("medium", "Medium"),
                 FilterEntry("hard", "Hard")
             )),
-            FilterOption("author", "Author", mutableStateListOf(
-                FilterEntry("easy", "Easy"),
-                FilterEntry("medium", "Medium"),
-                FilterEntry("hard", "Hard")
-            ))
+            FilterOption("author", "Author", generateAuthorFilters())
         )
     }
     val sudokuList by remember(filters) {
@@ -114,12 +109,6 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                 text = stringResource(R.string.gallery_header),
                 returnDest = AppMainDestinations.HOME.route,
                 navController = navController,
-                menuItems = {
-                    DropdownMenuItem(
-                        text = { Text("Placeholder") },
-                        onClick = {}
-                    )
-                }
             )
             Row(
                 modifier = Modifier
@@ -127,15 +116,15 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                     .padding(10.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
-                IconButton(
-                    onClick = {},
-                    shapes = IconButtonDefaults.shapes(),
-                ) {
-                    Icon(
-                        painterResource(R.drawable.search),
-                        contentDescription = "Search Button"
-                    )
-                }
+//                IconButton(
+//                    onClick = {},
+//                    shapes = IconButtonDefaults.shapes(),
+//                ) {
+//                    Icon(
+//                        painterResource(R.drawable.search),
+//                        contentDescription = "Search Button"
+//                    )
+//                }
                 Row(
                     modifier = Modifier
                         .horizontalScroll(rememberScrollState()),
@@ -237,7 +226,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                                 onLongClick = {
                                     scope.launch(Dispatchers.Main) {
                                         val bitmap =
-                                            createBitmapFromSudoku(context, sudoku.games[0])
+                                            createBitmapFromSudoku(context, sudoku.games[0].data)
                                         activity?.let { GalleryManager.printBitmap(it, bitmap) }
                                     }
                                 },

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opensudoku>
+  <name>Another hard sudoku</name>
+  <author>someone</author>
+  <description></description>
+  <comment></comment>
+  <created>2026-06-03 17:55</created>
+  <source>opensudoku-web-generator</source>
+  <level>hard</level>
+  <sourceURL>http://opensudoku.moire.org/#generated-puzzles</sourceURL>
+  <game data="807009500560000702900000000610000000008005016240070030000000300000810904050390080" />
+  <game data="000160000160005940025040003000007000470001060050806100000003409740000000003600080" />
+  <game data="057020109060873020200900600003005080000000007000017200009130000082006000105000000" />
+  <game data="580100400160009030900002000849200076005400020230000000000590000000060580001020000" />
+</opensudoku>

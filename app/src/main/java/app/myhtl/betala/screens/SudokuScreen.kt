@@ -115,7 +115,7 @@ data class TimerActions(
 @Composable
 fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
 
-    sudokuViewModel.updateIsFinishedAndCorrect()
+    Z.updateIsFinishedAndCorrect()
     LaunchedEffect(sudokuViewModel.isFinishedAndCorrect) {
         if (sudokuViewModel.isFinishedAndCorrect) {
             navController.navigate(AppAdditionalDestinations.WINSCREEN.route) {
@@ -186,11 +186,13 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
     val time = String.format("%02d:%02d", minutes,seconds)
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            if(CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT){
-            Column(Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally) {
+        if (CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT) {
+            Column(
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
                 TopRow(navController, sudokuGame.name, modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp), timer = time, timerActions = timerActions)
                 SecondTopRow(

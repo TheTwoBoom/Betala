@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
@@ -73,7 +76,6 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                     fontFamily = FontFamily(Font(R.font.majormonodisplay)),
                 )
             },
-            menuItems = {},
             leftButton = {},
             rightButton = {
                 IconButton(
@@ -88,7 +90,7 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
         )
         SudokuCarousel(
             text = "Sudokus of the Day",
-            items = GalleryManager.getAllSudokus(context),
+            items = GalleryManager.allSudokus,
             navController = navController,
             sudokuViewModel = sudokuViewModel,
             isLoading = GalleryManager.isLoading
