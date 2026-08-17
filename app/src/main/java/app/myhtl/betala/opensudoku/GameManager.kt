@@ -3,7 +3,6 @@ package app.myhtl.betala.opensudoku
 import android.util.Log
 import android.util.Xml
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +25,7 @@ object GameManager {
         val boxHeight: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
         val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(sqrt(data.size.toDouble()).toInt())},
         var isFullyCorrect: Boolean = false,
+        //TODO() make a subclass, which contains name, difficulty, variant, instead of in the Viewmodel. Then change it in the SudokuScreen
         val name: String = "?",
         ) {
         val originalList = data.toList()
@@ -53,9 +53,9 @@ object GameManager {
 
         fun updateAttributes(){
             val isFullyFilled = data.count{ it != 0} == size*size
-            if(isFullyFilled){
-                isFullyCorrect = checkCorrect().all { it == 0 }
-            } else isFullyCorrect = false
+            isFullyCorrect = if(isFullyFilled){
+                checkCorrect().all { it == 0 }
+            } else false
         }
 
         fun toggleNote(index: Int, value: Int) {
@@ -130,7 +130,7 @@ object GameManager {
                 markDuplicates(colIndices)
             }
 
-            // 3. Check Subgrids (Viel robuster!)
+            // 3. Check SubGrids (Viel robuster!)
             val numBlocksWide = s / boxWidth
             val numBlocksHigh = s / boxHeight
 
@@ -156,9 +156,7 @@ object GameManager {
 
             other as SudokuGame
 
-            if (data != other.data) return false
-
-            return true
+            return data == other.data
         }
         override fun hashCode(): Int {
             return data.hashCode()

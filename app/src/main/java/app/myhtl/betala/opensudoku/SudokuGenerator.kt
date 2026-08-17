@@ -102,15 +102,12 @@ class SudokuGenerator (
 
     fun createRandomFullySolvedSudoku(): Boolean{
         reset()
-
-        erg = Array(numbers) { IntArray(numbers) }
-
         for(i in 0 until numbers*numbers){
             val randomCell: Int = getRandomCell()
             val randomNumber: Int = getRandomNumber(randomCell)
 
             if(randomCell == -1 || randomNumber == -1){
-                println("Fehler: keine passende Lösung gefunden!")
+                println("Fehler: No solution found!")
                 //isValid?
                 return false
             }
@@ -120,6 +117,9 @@ class SudokuGenerator (
                 erg[randomCell/numbers][randomCell%numbers] = randomNumber
                 // no notes when a number is filled in
                 notes[randomCell/numbers][randomCell%numbers] = BooleanArray(numbers) { false }
+            }
+            else{
+                println("Can't place number")
             }
 
             removeNotes(randomCell, randomNumber)
