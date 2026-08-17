@@ -268,7 +268,7 @@ fun SudokuCarousel(
                         )
                         .clickable(true) {
                             if (item.games.isNotEmpty()) {
-                                sudokuViewModel.currentGame = item.games[0]
+                                sudokuViewModel.startNewGame(item.games[0])
                                 navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                             }
                         }
