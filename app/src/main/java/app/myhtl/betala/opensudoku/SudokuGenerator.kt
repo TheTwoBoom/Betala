@@ -1,109 +1,109 @@
 package app.myhtl.betala.opensudoku
 
-import ads_mobile_sdk.fe
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import kotlin.math.floor
+import kotlin.math.sqrt
 
 class SudokuGenerator (
     private var numbers: Int,
-    private var numbersSqrt: Int = Math.sqrt(numbers.toDouble()).toInt(),
+    val boxWidth: Int = sqrt(numbers.toDouble()).toInt(),
+    val boxHeight: Int = sqrt(numbers.toDouble()).toInt(),
     private var erg: Array<IntArray> = Array(numbers){ IntArray(numbers) },
     private var notes: Array<Array<BooleanArray>> = Array(numbers) { Array(numbers){BooleanArray(numbers) {true} } },
-
+    private val difficulty: Difficulty
     ){
 
     private fun reset() {
-        erg = Array(numbers) { IntArray(numbers) { 0 } }
+        erg = Array(numbers) { IntArray(numbers) }
         notes = Array(numbers) { Array(numbers) { BooleanArray(numbers) { true } } }
     }
     fun getRandomSudoku(): SnapshotStateList<Int>{
         var isValid = false
         //current solution for valid Sudokus without backtracking
-        while (isValid == false){
-            isValid = creatRandomFullySolvedSudoku()
+        while (!isValid){
+            isValid = createRandomFullySolvedSudoku()
         }
-        //amount just temporary
-        removeRandomNumbers(numbers*2)
+
+        removeRandomNumbers(difficulty.calculateNumbersToRemove(numbers*numbers))
 
 
-
-        var sudokuList: SnapshotStateList<Int> = mutableStateListOf()
+        val sudokuList: SnapshotStateList<Int> = mutableStateListOf()
         for(i in 0 until numbers*numbers){
             sudokuList.add(erg[i/numbers][i%numbers])
         }
         return sudokuList
     }
-    fun removeNote(row: Int, column: Int, number: Int){
-        if (number in 1..numbers) {
-            notes[row][column][number-1] = false
-        }
-        else{
-            println("keine valide Nummer: " + number)
-        }
-    }
-
-    fun removeNotes(row: Int, column: Int, numbers: BooleanArray){
-        for (i in 0 until numbers.size){
-            if(notes[row][column][i] && numbers[i]){
-                notes[row][column][i] = false
-            }
-        }
-    }
 
     //searchest for the Cells with the fewest notes and chooses a random cell from the result
-    fun getRandomCell(): Int{
-        var possibleCells = mutableListOf<Int>()
+    fun getRandomCell(): Int {
         var fewestNotes = numbers
-        //fewestNote.size is wrong, need to count true
+        var countCellsWithFewest = 0
 
-        for(i in 0 until numbers*numbers){
-            if (notes[i/numbers][i%numbers].count{it} < fewestNotes && notes[i/numbers][i%numbers].count{it} >= 1){
-                fewestNotes = notes[i/numbers][i%numbers].count{it}
+        for (i in 0 until numbers * numbers) {
+            val row = i / numbers
+            val col = i % numbers
+            if (erg[row][col] == 0) {
+                val notes = notes[row][col].count { it }
+                if (notes in 1 until fewestNotes) {
+                    fewestNotes = notes
+                    countCellsWithFewest = 1
+                } else if (notes == fewestNotes) {
+                    countCellsWithFewest++
+                }
             }
+
         }
 
-        for(i in 0 until numbers*numbers){
-            if(notes[i/numbers][i%numbers].count{it} == fewestNotes)
-                possibleCells.add(i)
-        }
-
-
-        if(possibleCells.isEmpty()){
+        if (countCellsWithFewest == 0) {
             return -1
         }
-        var randomCellIndex: Int = (Math.floor(Math.random()*(possibleCells.size))).toInt()
-        var randomCell = possibleCells.get(randomCellIndex)
-        //println(randomCell)
-        return randomCell
+
+        val randomCellIndex: Int = (floor(Math.random() * (countCellsWithFewest))).toInt()
+
+        var counter = 0
+        for (i in 0 until numbers * numbers) {
+            val row = i / numbers
+            val col = i % numbers
+            if (notes[row][col].count { it } == fewestNotes) {
+                if (counter == randomCellIndex) {
+                    return i
+                }
+                counter++
+            }
+        }
+        return -1
     }
 
     fun getRandomNumber(index: Int): Int{
         if(index == -1) return -1
 
-        var notesAtCell = notes[index/numbers][index%numbers]
-        var possibleNotes = mutableListOf<Int>()
-        for(i in 0 until notesAtCell.size){
-            if(notesAtCell[i] == true){
-                possibleNotes.add(i)
+        val notesAtCell = notes[index/numbers][index%numbers]
+        val possibleNotes = notesAtCell.count{it}
+        val randomNumberIndex = (floor(Math.random() * (possibleNotes))).toInt()
+
+        if(possibleNotes < 0){
+            return -1
+        }
+        else{
+            var counter = 0
+            for(i in 0 until numbers){
+                if(notesAtCell[i]){
+                    if(counter == randomNumberIndex){
+                        return i + 1
+                    }
+                    counter++
+                }
             }
         }
-        var randomNumberIndex = (Math.floor(Math.random()*(possibleNotes.size))).toInt()
-
-        var randomNumber: Int = 0
-        if(possibleNotes.size > 0){
-            randomNumber = possibleNotes.get(randomNumberIndex)+1
-        }
-        //println(randomNumber)
-        return randomNumber
+        return -1
     }
 
-    fun creatRandomFullySolvedSudoku(): Boolean{
+
+    fun createRandomFullySolvedSudoku(): Boolean{
         reset()
 
-        erg = Array(numbers) { IntArray(numbers) {0} }
-
-
+        erg = Array(numbers) { IntArray(numbers) }
 
         for(i in 0 until numbers*numbers){
             val randomCell: Int = getRandomCell()
@@ -120,9 +120,7 @@ class SudokuGenerator (
                 erg[randomCell/numbers][randomCell%numbers] = randomNumber
                 // no notes when a number is filled in
                 notes[randomCell/numbers][randomCell%numbers] = BooleanArray(numbers) { false }
-
             }
-
 
             removeNotes(randomCell, randomNumber)
         }
@@ -138,46 +136,87 @@ class SudokuGenerator (
 
 
     fun removeNotes(randomCell: Int, randomNumber: Int){
-        val selectedCellRow = randomCell/numbers
-        val selectedCellColumn = randomCell%numbers
+        val cellRow = randomCell/numbers
+        val cellColumn = randomCell%numbers
 
         // in this loop, the notes are set based after the random number that has been added
-        for (i in 0 until numbers){
-            for (j in 0 until numbers){
-            val row = i
-            val column = j
-
-            if ( erg[row][column] == 0) {
-                //remove the random number from the notes in the same row, column or (wrong)!! subgrid
-                if (row == selectedCellRow || column == selectedCellColumn || (row / numbersSqrt == selectedCellRow / numbersSqrt && column / numbersSqrt == selectedCellColumn / numbersSqrt)) {
-                    removeNote(row, column, randomNumber)
-                }
-            }
-            }
+        for(i in 0 until numbers){
+            notes[i][cellColumn][randomNumber -1] = false
+            notes[cellRow][i][randomNumber -1] = false
+            notes[(cellRow/boxHeight)*boxHeight+i/boxWidth][(cellColumn/boxWidth)*boxWidth+i%boxWidth][randomNumber -1] = false
         }
     }
 
     fun removeRandomNumbers(amount: Int){
+        val solver = SudokuSolver(
+            solveOnInit = false,
+            inputData = erg,
+            boxWidth = boxWidth,
+            boxHeight = boxHeight
+        )
         repeat(amount){
-            var randomCell = getRandomFilledCell()
+            val randomCell = getRandomFilledCell()
+            val rememberCell = erg[randomCell/numbers][randomCell%numbers]
             erg[randomCell/numbers][randomCell%numbers] = 0
+            solver.setNewData(erg)
+            solver.solve()
+
+            // if it isn't solvable
+            if(!solver.hasOnlyOneSolution()){
+                erg[randomCell/numbers][randomCell%numbers] = rememberCell
+                //it tries different cells
+                for(i in 0 until numbers){
+
+                    val randomCell = getRandomFilledCell()
+                    val rememberCell = erg[randomCell/numbers][randomCell%numbers]
+                    erg[randomCell/numbers][randomCell%numbers] = 0
+                    solver.setNewData(erg)
+                    solver.solve()
+
+                    if(!solver.hasOnlyOneSolution()){
+                        erg[randomCell/numbers][randomCell%numbers] = rememberCell
+
+                    }
+                    else{
+                        break
+                    }
+
+                    if(i == numbers-1){
+                        println("Not all numbers were removed")
+                        return
+                    }
+
+                }
+
+
+            }
         }
     }
 
     fun getRandomFilledCell(): Int{
-        var filledOutCells = mutableListOf<Int>()
+        var countFilled = 0
 
-        for(i in 0 until numbers*numbers){
-            if(erg[i/numbers][i%numbers] != 0)
-                filledOutCells.add(i)
+        for (i in 0 until numbers * numbers) {
+            if (erg[i / numbers][i % numbers] != 0) {
+                countFilled++
+            }
         }
 
-
-        if(filledOutCells.isEmpty()){
+        if (countFilled == 0) {
             return -1
         }
-        var randomCellIndex: Int = (Math.floor(Math.random()*(filledOutCells.size))).toInt()
-        var randomCell = filledOutCells.get(randomCellIndex)
-        return randomCell
+
+        val randomCellIndex: Int = (floor(Math.random() * (countFilled))).toInt()
+
+        var counter = 0
+        for (i in 0 until numbers * numbers) {
+            if (erg[i / numbers][i % numbers] != 0) {
+                if (counter == randomCellIndex) {
+                    return i
+                }
+                counter++
+            }
+        }
+        return -1
     }
 }

@@ -1,6 +1,5 @@
 package app.myhtl.betala
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.res.Configuration
 
@@ -10,6 +9,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -31,16 +31,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import app.myhtl.betala.opensudoku.GalleryManager
-import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.screens.CurrentDevice
 import app.myhtl.betala.ui.theme.BetalaTheme
 import app.myhtl.betala.screens.GalleryScreen
 import app.myhtl.betala.screens.HomeScreen
+import app.myhtl.betala.screens.SetSudokuRulesScreen
 import app.myhtl.betala.screens.SettingsScreen
 import app.myhtl.betala.screens.SudokuScreen
 import app.myhtl.betala.screens.WinScreen
@@ -104,7 +103,7 @@ fun BetalaApp() {
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            AppDestinations.entries.forEach { destinations ->
+            AppMainDestinations.entries.forEach { destinations ->
                 item(
                     icon = {
                         Icon(
@@ -140,15 +139,15 @@ fun BetalaApp() {
 
         NavHost(
             navController = navController,
-            startDestination = AppDestinations.HOME.route
+            startDestination = AppMainDestinations.HOME.route
         ) {
-            composable(AppDestinations.HOME.route) {
+            composable(AppMainDestinations.HOME.route) {
                 HomeScreen(navController, sudokuViewModel)
             }
-            composable(AppDestinations.SETTINGS.route) {
+            composable(AppMainDestinations.SETTINGS.route) {
                 SettingsScreen(navController)
             }
-            composable(AppDestinations.STORE.route) {
+            composable(AppMainDestinations.STORE.route) {
                 GalleryScreen(navController, sudokuViewModel)
             }
             composable(AppAdditionalDestinations.SUDOKU.route) {
@@ -160,11 +159,14 @@ fun BetalaApp() {
             composable(AppAdditionalDestinations.WINSCREEN.route) {
                 WinScreen(navController)
             }
+            composable(AppAdditionalDestinations.SETRULES.route) {
+                SetSudokuRulesScreen(navController, sudokuViewModel)
+            }
         }
     }
 }
 
-enum class AppDestinations(
+enum class AppMainDestinations(
     val labelRes: Int,
     val icon: Int,
     val route: String
@@ -178,6 +180,7 @@ enum class AppAdditionalDestinations(
     val label: String,
     val route: String
 ) {
+    SETRULES("SetRules_Screen", route = "setRules_screen"),
     WINSCREEN("Win_Screen", route = "win_screen"),
     SUDOKU("Sudoku_Screen", route = "sudoku_screen"),
     GALLERY("Gallery_Screen", route = "gallery_screen"),

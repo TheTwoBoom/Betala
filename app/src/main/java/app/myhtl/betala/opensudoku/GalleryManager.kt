@@ -24,8 +24,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
-import app.myhtl.betala.screens.CreateSudoku
 import app.myhtl.betala.screens.SudokuActions
+import app.myhtl.betala.screens.SudokuCanvas
 import app.myhtl.betala.utils.FilterOption
 import app.myhtl.betala.utils.captureComposable
 import app.myhtl.betala.utils.useVirtualDisplay
@@ -148,26 +148,17 @@ object GalleryManager {
                 LaunchedEffect(Unit) {
                     capture()
                 }
-                CreateSudoku(
-                    Modifier,
-                    rowCount = sudokuGame.size(),
+                SudokuCanvas(
+                    modifier = Modifier,
                     cells = sudokuGame.data,
                     cellNotes = sudokuGame.noteData,
                     actions = SudokuActions(
-                        setIndex = {},
-                        onNumberSelected = {},
-                        toggleNoteMode = {},
-                        validate = { true },
-                        isEditable = { false },
-                        sameValue = { false },
-                        isNoteMode = false,
-                        erase = {},
-                        isFinishedAndCorrect = true,
                         // TODO: make the number variable
                         getNumbers = 9,
-                        isPrinting = true
+                        originalNumbers = sudokuGame.data.map{ it != 0 }
                     ),
                     selectedCell = -1,
+                    selectedCells = emptySet()
                 )
             }
         }

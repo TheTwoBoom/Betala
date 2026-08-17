@@ -1,6 +1,10 @@
 package app.myhtl.betala.opensudoku
 
+import ads_mobile_sdk.nu
 import android.util.Xml
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
@@ -9,116 +13,136 @@ import kotlin.math.sqrt
 
 object GameManager {
     class SudokuGame(
+        val name: String = "?",
         val data: SnapshotStateList<Int>,
-        val changed: MutableList<Int> = MutableList(data.size) {0},
-        val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(9)},
-        var isFullyFilled: Boolean = false,
-        var filledCells: Int = 0,
-        var isFullyCorrect: Boolean = false
-    ) {
-        public fun size(): Int = sqrt(data.size.toDouble()).toInt()
-        public fun index(x: Int, y: Int): Int = y * size() + x
+        val size: Int = sqrt(data.size.toDouble()).toInt(),
+        val boxWidth: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
+        val boxHeight: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
+        val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(sqrt(data.size.toDouble()).toInt())},
+        var isFullyCorrect: Boolean = false,
+        ) {
+        val originalList = data.toList()
+
 
         fun changeValue(index: Int, value: Int) {
-            if(this.getOriginal()[index] == 0) {
-                changed[index] = value
+            if(originalList[index] == 0) {
                 data[index] = value
-                if (value != 0) {
-                    clearNotes(index)
+
+                if (value != 0) clearNotes(index)
+                updateAttributes()
+            }
+        }
+
+        fun changeValues(indices: Set<Int>, value: Int){
+            indices.forEach { index ->
+                if(originalList[index] == 0) {
+                    data[index] = value
+
+                    if (value != 0) clearNotes(index)
                 }
             }
             updateAttributes()
         }
 
         fun updateAttributes(){
-            filledCells = 0
-            data.forEach { value ->
-                if(value != 0) filledCells++
-            }
-            if (filledCells == getNumSet().size*getNumSet().size) isFullyFilled = true else isFullyFilled = false
+            val isFullyFilled = data.count{ it != 0} == size*size
             if(isFullyFilled){
-                checkCorrect().forEach { value ->
-                    if(value != 0){
-                        isFullyCorrect = false
-                        return
-                    }
-                }
-                isFullyCorrect = true
-            }
+                isFullyCorrect = checkCorrect().all { it == 0 }
+            } else isFullyCorrect = false
         }
 
         fun toggleNote(index: Int, value: Int) {
-            if (data[index] == 0) {
-                var noteArray: BooleanArray = noteData[index]
-                noteArray[value - 1] = !noteData[index][value - 1]
-                noteData[index] = noteArray.copyOf()
-            }
+            if(value !in 1 .. size && data[index] == 0) return
+            val noteArray = noteData[index]
+            noteArray[value - 1] = !noteData[index][value - 1]
+            noteData[index] = noteArray.copyOf()
+
+        }
+
+        fun toggleNotes(indices: Set<Int>, value: Int){
+            if(value !in 1 .. size) return
+            indices.forEach { index ->
+                if (data[index] == 0) {
+                    val noteArray = noteData[index]
+                    noteArray[value - 1] = !noteData[index][value - 1]
+                    noteData[index] = noteArray.copyOf()
+                }            }
         }
         fun clearNotes(index: Int) {
-            if(this.getOriginal()[index] == 0) {
-                noteData[index] = BooleanArray(9) { false }
+            if(this.originalList[index] == 0) {
+                noteData[index] = BooleanArray(size) { false }
             }
         }
+
+        fun clearNotes(indices: Set<Int>){
+            indices.forEach { index ->
+                clearNotes(index)
+            }
+        }
+
         fun clearDataAt(index: Int) {
-            if(this.getOriginal()[index] == 0){
-                updateAttributes()
+            if(originalList[index] == 0 && data[index] != 0){
                 data[index] = 0
             }
         }
 
+        fun clearDataAt(indices: Set<Int>){
+            indices.forEach { index ->
+                clearDataAt(index)
+            }
+        }
+
         fun checkCorrect(): List<Int> {
-            val falseList: MutableList<Int> = MutableList(data.size) {0}
-            // Check rows
-            for (i in 0..8) {
-                val seen = BooleanArray(9)
-                for (j in 0..8) {
-                    val value = data[index(j, i)]
+            val falseList: MutableList<Int> = MutableList(data.size) { 0 }
+            val s = size
+
+            fun markDuplicates(indices: List<Int>) {
+                val seenPositions = mutableMapOf<Int, MutableList<Int>>()
+                for (pos in indices) {
+                    val value = data[pos]
                     if (value != 0) {
-                        if (seen[value - 1]) falseList[index(j, i)] = value
-                        seen[value - 1] = true
+                        seenPositions.getOrPut(value) { mutableListOf() }.add(pos)
+                    }
+                }
+                for ((value, positions) in seenPositions) {
+                    if (positions.size > 1) {
+                        for (pos in positions) falseList[pos] = value
                     }
                 }
             }
-            // Check columns
-            for (j in 0..8) {
-                val seen = BooleanArray(9)
-                for (i in 0..8) {
-                    val value = data[index(j, i)]
-                    if (value != 0) {
-                        if (seen[value - 1]) falseList[index(j, i)] = value
-                        seen[value - 1] = true
-                    }
-                }
+
+            // 1. Check Rows
+            for (row in 0 until s) {
+                val rowIndices = (0 until s).map { col -> row*size + col }
+                markDuplicates(rowIndices)
             }
-            // Check 3x3 subgrids
-            for (boxRow in 0..2) {
-                for (boxCol in 0..2) {
-                    val seen = BooleanArray(9)
-                    for (i in 0..2) {
-                        for (j in 0..2) {
-                            val value = data[index(boxCol * 3 + j, boxRow * 3 + i)]
-                            if (value != 0) {
-                                if (seen[value - 1]) falseList[index(j, i)] = value
-                                seen[value - 1] = true
-                            }
+
+            // 2. Check Columns
+            for (col in 0 until s) {
+                val colIndices = (0 until s).map { row -> row*size + col }
+                markDuplicates(colIndices)
+            }
+
+            // 3. Check Subgrids (Viel robuster!)
+            val numBlocksWide = s / boxWidth
+            val numBlocksHigh = s / boxHeight
+
+            for (by in 0 until numBlocksHigh) {
+                for (bx in 0 until numBlocksWide) {
+                    val boxIndices = mutableListOf<Int>()
+                    for (y in 0 until boxHeight) {
+                        for (x in 0 until boxWidth) {
+                            val globalX = bx * boxWidth + x
+                            val globalY = by * boxHeight + y
+                            boxIndices.add(globalY*size + globalX)
                         }
                     }
+                    markDuplicates(boxIndices)
                 }
             }
             return falseList
         }
-        fun getOriginal(): List<Int> {
-            val originalList: MutableList<Int> = data.toMutableList()
-            for (i in 0 until data.size) {
-                if (changed[i] != 0) {
-                    originalList[i] = 0
-                }
-            }
-            return originalList
-        }
-        fun getNumSet(): List<Int> {
-            return (1..size()).toList()
-        }
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -173,13 +197,14 @@ object GameManager {
                             val data = parser.getAttributeValue(null, "data")
                             try {
                                 val gameChars = data.toCharArray()
-                                val gameList = SnapshotStateList(81) { 0 }
-                                for (x in 0..8) {
-                                    for (y in 0..8) {
-                                        gameList[x * 9 + y] = gameChars[x * 9 + y] - '0'
+                                val numbers = sqrt(gameChars.size.toDouble()).toInt()
+                                val gameList = SnapshotStateList(gameChars.size) { 0 }
+                                for (x in 0 until numbers) {
+                                    for (y in 0 until numbers) {
+                                        gameList[x * numbers + y] = gameChars[x * numbers + y] - '0'
                                     }
                                 }
-                                games.add(SudokuGame(gameList))
+                                games.add(SudokuGame(data = gameList, name = name))
                             } catch (_: Exception) {
                                 return null
                             }

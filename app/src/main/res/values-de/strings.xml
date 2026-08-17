@@ -3,8 +3,8 @@
     <string name="app_name">Betala</string>
     <string name="settings">Einstellungen</string>
     <string name="favorites">Favoriten</string>
+    <string name="new_sudoku">Neues Sudoku</string>
     <string name="home">Start</string>
-    <string name="play">Spielen</string>
     <string name="daily_challenge">Tägliche Challenge</string>
     <string name="select_level">Level auswählen</string>
     <string name="donate">Spenden</string>
@@ -15,5 +15,17 @@
     <string name="gallery_header">Sudokus</string>
     <string name="win_text">Du hast es geschafft!</string>
     <string name="back">zurück</string>
-    <string name="new_sudoku" >Neues Sudoku</string>
+    <string name="create_Sudoku">Sudoku erstellen</string>
+    <string name="generated">auto-generiert</string>
+    <string name="create_header">Mein Sudoku</string>
+    <string name="start_game">Start</string>
+    <string name="Difficulty_Easy">Leicht</string>
+    <string name="Difficulty_Medium">Mittel</string>
+    <string name="Difficulty_Hard">Schwer</string>
+    <string name="Difficulty_Extreme">Extrem</string>
+    <string name="setRules_header">Setze deine Regeln</string>
+    <string name="selectVariants_text">Variante:</string>
+    <string name="selectSize_text">Größe:</string>
+    <string name="selectBoxSize_text">Boxgröße:</string>
+    <string name="selectDifficulty_text">Schwierigkeitsgrad:</string>
 </resources>

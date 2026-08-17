@@ -18,29 +18,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import app.myhtl.betala.AppDestinations
+import app.myhtl.betala.AppMainDestinations
 import app.myhtl.betala.R
 
-@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 fun WinScreen(navController: NavController){
-    FlexBox(modifier = Modifier.fillMaxSize().padding(24.dp),
-        config = {
-            wrap(FlexWrap.Wrap)
-            direction(FlexDirection.Row)
-            alignContent(FlexAlignContent.Center)
-            alignItems(FlexAlignItems.Center)
-            gap(24.dp)
-        }) {
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text(text = stringResource(R.string.win_text))
-            Button(
-                onClick = {navController.popBackStack(AppDestinations.HOME.route, false)}
-            ) {
-                Text(stringResource(R.string.back))
-            }
-
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Text(text = stringResource(R.string.win_text))
+        Button(
+            onClick = {navController.popBackStack(AppMainDestinations.HOME.route, false)}
+        ) {
+            Text(stringResource(R.string.back))
         }
-    }
 
+    }
 }

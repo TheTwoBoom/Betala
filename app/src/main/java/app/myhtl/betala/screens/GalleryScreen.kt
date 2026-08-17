@@ -52,7 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.myhtl.betala.AppAdditionalDestinations
-import app.myhtl.betala.AppDestinations
+import app.myhtl.betala.AppMainDestinations
 import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
@@ -71,17 +71,17 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
     val filters: SnapshotStateList<FilterOption> = remember {
         mutableStateListOf(
             FilterOption("favorite", "Favorites", mutableStateListOf(
-                FilterEntry("", "", false),
+                FilterEntry("", ""),
             )),
             FilterOption("level", "Difficulty", mutableStateListOf(
-                FilterEntry("easy", "Easy", false),
-                FilterEntry("medium", "Medium", false),
-                FilterEntry("hard", "Hard", false)
+                FilterEntry("easy", "Easy",),
+                FilterEntry("medium", "Medium"),
+                FilterEntry("hard", "Hard")
             )),
             FilterOption("author", "Author", mutableStateListOf(
-                FilterEntry("easy", "Easy", false),
-                FilterEntry("medium", "Medium", false),
-                FilterEntry("hard", "Hard", false)
+                FilterEntry("easy", "Easy"),
+                FilterEntry("medium", "Medium"),
+                FilterEntry("hard", "Hard")
             ))
         )
     }
@@ -112,7 +112,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
         ) {
             Header(
                 text = stringResource(R.string.gallery_header),
-                returnDest = AppDestinations.HOME.route,
+                returnDest = AppMainDestinations.HOME.route,
                 navController = navController,
                 menuItems = {
                     DropdownMenuItem(
@@ -193,7 +193,6 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                                 for (option in filter.options) {
                                     DropdownMenuItem(
                                         onClick = {
-                                            expanded = false
                                             option.isSelected = !option.isSelected
                                         },
                                         text = { Text(option.label) },
@@ -231,7 +230,7 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                                 modifier = Modifier.padding(5.dp),
                                 onClick = {
                                     if (sudoku.games.isNotEmpty()) {
-                                        sudokuViewModel.currentGame = sudoku.games[0]
+                                        sudokuViewModel.startNewGame(sudoku.games[0])
                                         navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                                     }
                                 },

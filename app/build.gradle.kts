@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.material3)
     implementation(libs.arsceneview)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)

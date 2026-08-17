@@ -44,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -103,27 +104,19 @@ fun ARTapToPlace(sudokuGame: GameManager.SudokuGame) {
                     scale = Scale(0.3f),
                     rotation = Rotation(270f, 0f, 0f)
                 ) {
-                    CreateSudoku(
+                    /*CreateSudoku(
                         Modifier,
-                        rowCount = sudokuGame.size(),
+                        rowCount = sudokuGame.size,
                         cells = sudokuGame.data,
                         cellNotes = sudokuGame.noteData,
                         actions = SudokuActions(
-                            setIndex = {},
-                            onNumberSelected = {},
-                            toggleNoteMode = {},
-                            validate = { true },
-                            isEditable = { false },
-                            sameValue = { false },
-                            isNoteMode = false,
-                            erase = {},
-                            isFinishedAndCorrect = true,
                             // TODO: make the number variable
                             getNumbers = 9,
+                            lives = 0,
                             isPrinting = true
                         ),
                         selectedCell = -1,
-                    )
+                    )*/
                 }
             }
         }
@@ -139,7 +132,7 @@ fun Header(
     menuItems: @Composable (ColumnScope.() -> Unit),
     leftButton: @Composable (RowScope.() -> Unit) = {
         IconButton(
-            onClick = { navController.navigate(returnDest) },
+            onClick = { navController.popBackStack() },
             shapes = IconButtonDefaults.shapes(),
         ) {
             Icon(
@@ -168,7 +161,7 @@ fun Header(
         Text(
             text = text,
             fontSize = 32.sp,
-            fontWeight = FontWeight(350)
+            fontWeight = FontWeight(350),
         )
     },
 ) {

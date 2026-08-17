@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +30,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
@@ -44,10 +41,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import app.myhtl.betala.R
+import app.myhtl.betala.SudokuMode
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GalleryManager
-import app.myhtl.betala.opensudoku.GameManager
-import app.myhtl.betala.opensudoku.SudokuGenerator
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
@@ -101,12 +97,9 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
             modifier = Modifier
                 .padding(top = 5.dp, bottom = 5.dp)
                 .clickable(true) {
-                    val generator = SudokuGenerator(numbers = 9)
-                    // would else be empty
-                    var sudoku = GameManager.SudokuGame(generator.getRandomSudoku())
-                    sudokuViewModel.currentGame = sudoku;
 
-                    navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                    sudokuViewModel.sudokuMode = SudokuMode.GENERATOR
+                    navController.navigate(AppAdditionalDestinations.SETRULES.route)
                 }
         ) {
             Row(
@@ -119,15 +112,11 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                 Icon(painterResource(R.drawable.dice), "Dice")
                 Text(
                     modifier = Modifier.padding(start = 6.dp),
-                    text = stringResource(R.string.play)
+                    text = stringResource(R.string.new_sudoku)
                 )
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+
             OutlinedCard(
                 modifier = Modifier
                     .padding(top = 5.dp, bottom = 5.dp)
@@ -151,12 +140,9 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
             OutlinedCard(
                 modifier = Modifier
                     .padding(top = 5.dp, bottom = 5.dp)
-                    .clickable(true) {
-                        val numbers = 9
-                        val sudoku =
-                            GameManager.SudokuGame(SnapshotStateList(numbers * numbers) { 0 })
-                        sudokuViewModel.currentGame = sudoku;
-                        navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                    .clickable {
+                        sudokuViewModel.sudokuMode = SudokuMode.CREATOR
+                        navController.navigate(AppAdditionalDestinations.SETRULES.route)
                     }
             ) {
                 Row(
@@ -171,7 +157,6 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                         text = stringResource(R.string.new_sudoku)
                     )
                 }
-            }
         }
 
 

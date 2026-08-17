@@ -6,7 +6,6 @@
     <string name="favorites">Favorites</string>
     <string name="home">Home</string>
 
-    <string name="play">Quick Game</string>
     <string name="daily_challenge">Daily challenge</string>
     <string name="select_level">Select level</string>
     <string name="donate">Donate</string>
@@ -17,7 +16,20 @@
     <string name="gallery_header">Sudokus</string>
     <string name="win_text">You did it!</string>
     <string name="back">back</string>
+    <string name="create_Sudoku">create Sudoku</string>
+    <string name="generated">auto-generated</string>
+    <string name="create_header">My Sudoku</string>
     <string name="new_sudoku">New Sudoku</string>
+    <string name="start_game">start game</string>
+    <string name="Difficulty_Easy">Easy</string>
+    <string name="Difficulty_Medium">Medium</string>
+    <string name="Difficulty_Hard">Hard</string>
+    <string name="Difficulty_Extreme">Extreme</string>
+    <string name="setRules_header">Set your Rules</string>
+    <string name="selectVariants_text">Variant:</string>
+    <string name="selectSize_text">Size:</string>
+    <string name="selectBoxSize_text">Box Size:</string>
+    <string name="selectDifficulty_text">Difficulty:</string>
 
 
 </resources>

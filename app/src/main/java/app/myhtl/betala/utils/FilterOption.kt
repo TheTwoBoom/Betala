@@ -11,7 +11,7 @@ data class FilterOption(
 class FilterEntry(
     val id: String,
     val label: String,
-    initialIsSelected: Boolean
+    initialIsSelected: Boolean = false
 ) {
     var isSelected: Boolean by mutableStateOf(initialIsSelected)
 }
