@@ -28,4 +28,6 @@
     <string name="selectSize_text">Größe:</string>
     <string name="selectBoxSize_text">Boxgröße:</string>
     <string name="selectDifficulty_text">Schwierigkeitsgrad:</string>
+    <string name="winscreen_time_text">"Zeit: "</string>
+    <string name="winscreen_mistakes_text">"gemachte Fehler: "</string>
 </resources>

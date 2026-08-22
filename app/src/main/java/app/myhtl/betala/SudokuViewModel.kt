@@ -63,6 +63,8 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     private var msAfterLastStart = 0L
 
     fun startNewGame(game: GameManager.SudokuGame){
+        // for safety leave old game
+        leaveGame()
         pauseOrResumeTimer()
         currentGame = game
         gameSize = game.size
@@ -75,6 +77,8 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun continueGame(game: GameManager.SudokuGame, isFinished: Boolean = false, lifeCount: Int, errorArray: BooleanArray = BooleanArray(currentGame?.size ?: 0){false}, time: Int){
+        // for safety leave old game
+        leaveGame()
         pauseOrResumeTimer()
         currentGame = game
         gameSize = game.size

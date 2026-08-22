@@ -1,5 +1,6 @@
 package app.myhtl.betala.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -118,13 +119,8 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
     sudokuViewModel.updateIsFinishedAndCorrect()
     LaunchedEffect(sudokuViewModel.isFinishedAndCorrect) {
         if (sudokuViewModel.isFinishedAndCorrect) {
-            navController.navigate(AppAdditionalDestinations.WINSCREEN.route) {
-                popUpTo(AppAdditionalDestinations.GALLERY.route) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
+            if(sudokuViewModel.isRunning.value) sudokuViewModel.pauseOrResumeTimer()
+            navController.navigate(AppAdditionalDestinations.WINSCREEN.route)
         }
     }
 
@@ -142,6 +138,11 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
+    }
+
+    BackHandler(enabled = true) {
+        sudokuViewModel.leaveGame()
+        navController.popBackStack()
     }
 
     val sudokuGame = sudokuViewModel.currentGame?: return

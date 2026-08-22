@@ -30,6 +30,8 @@
     <string name="selectSize_text">Size:</string>
     <string name="selectBoxSize_text">Box Size:</string>
     <string name="selectDifficulty_text">Difficulty:</string>
+    <string name="winscreen_time_text">Time:</string>
+    <string name="winscreen_mistakes_text">Mistakes made:</string>
 
 
 </resources>

@@ -159,7 +159,7 @@ fun BetalaApp() {
                 GalleryScreen(navController, sudokuViewModel)
             }
             composable(AppAdditionalDestinations.WINSCREEN.route) {
-                WinScreen(navController)
+                WinScreen(navController, sudokuViewModel)
             }
             composable(AppAdditionalDestinations.SETRULES.route) {
                 SetSudokuRulesScreen(navController, sudokuViewModel)
