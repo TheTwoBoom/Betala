@@ -16,13 +16,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import app.myhtl.betala.utils.SettingUtils
-import kotlinx.coroutines.launch
+import java.util.Stack
+import kotlin.collections.copyOf
 
 enum class SudokuMode{
     GENERATOR,
     CREATOR
 }
 class SudokuViewModel(application: Application) : AndroidViewModel(application) {
+    private var moveHistory = Stack<SudokuMove>()
+    private var canUndo by mutableStateOf(false)
+    private var moveFuture = Stack<SudokuMove>()
+    private var canRedo by mutableStateOf(false)
+
+
     var sudokuMode by mutableStateOf(SudokuMode.GENERATOR)
     var difficulty by mutableStateOf(Difficulty.Easy)
     //var size by mutableStateOf(Size.Classic) // not needed
@@ -63,6 +70,8 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     private var msAfterLastStart = 0L
 
     fun startNewGame(game: GameManager.SudokuGame){
+        moveHistory.clear()
+        moveFuture.clear()
         // for safety leave old game
         leaveGame()
         pauseOrResumeTimer()
@@ -76,7 +85,9 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         lifeCount = 3
     }
 
-    fun continueGame(game: GameManager.SudokuGame, isFinished: Boolean = false, lifeCount: Int, errorArray: BooleanArray = BooleanArray(currentGame?.size ?: 0){false}, time: Int){
+    fun continueGame(game: GameManager.SudokuGame, moveHistory: Stack<SudokuMove>, isFinished: Boolean = false, lifeCount: Int, errorArray: BooleanArray = BooleanArray(currentGame?.size ?: 0){false}, time: Int){
+        this.moveHistory = moveHistory
+        moveFuture.clear()
         // for safety leave old game
         leaveGame()
         pauseOrResumeTimer()
@@ -105,17 +116,26 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun onNumberSelected(number: Int){
-        //überprüft, ob die Zahl eine fix vorgegebene Zahl ist
-        if(!isNoteMode || isNoteModeDisabled) {
-            currentGame?.changeValue(selectedIndex, number)
-            currentGame?.changeValues(selectedIndices, number)
 
-            validateSudoku()
-        } else {
-            currentGame?.toggleNote(selectedIndex, number)
-            currentGame?.toggleNotes(selectedIndices, number)
+        val game = currentGame ?: return
+        val indices = selectedIndices + selectedIndex
+
+        val oldMove = getCurrentMove()
+
+        var valueChanged = true
+        if(!isNoteMode && selectedIndices.isEmpty()) {
+            valueChanged = game.changeValues(indices, number)
+
+            validateSudoku(indices)
+        } else if(!isNoteModeDisabled) {
+            valueChanged = game.toggleNotes(indices, number)
         }
+
+        if(!valueChanged) return
+
+        pushMoveToHistory(oldMove)
         updateIsFinishedAndCorrect()
+        updateUndoRedoFlags()
     }
 
     fun toggleNoteMode() {
@@ -126,12 +146,19 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun eraseCell(){
-        currentGame?.clearDataAt(selectedIndex)
-        currentGame?.clearDataAt(selectedIndices)
 
-        currentGame?.clearNotes(selectedIndex)
-        currentGame?.clearNotes(selectedIndices)
-        validateSudoku()
+        val game = currentGame ?: return
+        val indices = selectedIndices + selectedIndex
+
+        val oldMove = getCurrentMove()
+
+        val valueChanged = game.clearDataAt(indices)
+        val noteChanged = game.clearNotes(indices)
+        if(!valueChanged && !noteChanged) return
+
+        pushMoveToHistory(oldMove)
+        validateSudoku(indices)
+        updateUndoRedoFlags()
     }
 
     fun sameValue(value: Int): Boolean{
@@ -143,16 +170,17 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
 
-    fun validateSudoku(){
-        val oldMistakes = errorArray.count{ it }
+    fun validateSudoku(affectedIndices: Set<Int> = emptySet(), changeLives: Boolean = true){
             val checkCorrect = currentGame?.checkCorrect()
             for(i in 0 until gameSize*gameSize){
                 errorArray[i] = checkCorrect?.get(i) != 0
             }
-        val mistakes = errorArray.count{ it }
-        if(mistakes > oldMistakes){
-            lifeCount--
+        if(!changeLives) return
+        val madeMistake = affectedIndices.any{ index ->
+            errorArray[index] && currentGame?.data[index] != 0
         }
+        if(madeMistake) lifeCount--
+
     }
 
     fun hasError(index: Int): Boolean{
@@ -172,6 +200,92 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         isFinishedAndCorrect = currentGame?.isFullyCorrect == true
     }
 
+
+    fun undoMove(){
+        val game = currentGame ?: return
+        if(moveHistory.isEmpty()) return
+
+        val lastMove = moveHistory.pop()
+
+        val redoStates = lastMove.moves.map { state ->
+            CellState(index = state.index,
+                value = game.data[state.index],
+                notes = game.noteData[state.index].copyOf())
+        }
+        moveFuture.push(SudokuMove(redoStates))
+
+        lastMove.moves.forEach { state ->
+            game.data[state.index] = state.value
+            game.noteData[state.index] = state.notes
+        }
+        validateSudoku(changeLives = false)
+        updateUndoRedoFlags()
+    }
+
+    fun redoMove(){
+        val game = currentGame ?: return
+        if(moveFuture.isEmpty()) return
+
+        val futureMove = moveFuture.pop()
+
+
+        val undoStates = futureMove.moves.map { state ->
+            CellState(index = state.index,
+                value = game.data[state.index],
+                notes = game.noteData[state.index].copyOf())
+        }
+        moveHistory.push(SudokuMove(undoStates))
+
+        futureMove.moves.forEach { state ->
+            game.data[state.index] = state.value
+            game.noteData[state.index] = state.notes
+        }
+
+        validateSudoku(changeLives = false)
+        updateUndoRedoFlags()
+    }
+
+    private fun updateUndoRedoFlags(){
+        canUndo = moveHistory.isNotEmpty()
+        canRedo = moveFuture.isNotEmpty()
+    }
+    fun canUndo() = canUndo
+    fun canRedo() = canRedo
+
+    private fun getCurrentMove(): SudokuMove?{
+        val game = currentGame ?: return null
+
+        val indices = selectedIndices + selectedIndex
+        val states =  indices.map{ index ->
+            CellState(
+                index = index,
+                value = game.data[index],
+                notes = game.noteData[index].copyOf()
+            )
+        }
+        return SudokuMove(states)
+    }
+
+    private fun pushMoveToHistory(move: SudokuMove?){
+        moveHistory.push(move)
+        moveFuture.clear()
+    }
+
+    private fun pushMoveToFuture(){
+        val game = currentGame ?: return
+
+        val indices = selectedIndices + selectedIndex
+        val states = indices.map{ index ->
+            CellState(
+                index = index,
+                value = game.data[index],
+                notes = game.noteData[index].copyOf()
+            )
+        }
+        moveFuture.push(SudokuMove(states))
+    }
+
+    //timer functions
     fun pauseOrResumeTimer(){
         if(_isRunning.value){
             _isRunning.value = false
@@ -203,3 +317,14 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         msAfterLastStart = 0L
     }
 }
+
+
+data class SudokuMove(
+    val moves: List<CellState>
+)
+
+data class CellState(
+    val index: Int,
+    val value: Int,
+    val notes: BooleanArray
+)

@@ -9,7 +9,6 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,13 +24,10 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -39,7 +35,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.DisposableEffect
@@ -51,16 +46,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.isEmpty
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.myhtl.betala.R
 import androidx.compose.ui.res.painterResource
@@ -103,8 +93,13 @@ data class SudokuActions(
     val getBoxHeight: Int = sqrt(getNumbers.toDouble()).toInt(),
     val getBoxWidth: Int = sqrt(getNumbers.toDouble()).toInt(),
     val lives: Int = 0,
-    val getFinishedNumbers: () -> BooleanArray = {BooleanArray(getNumbers){false}}
-)
+    val getFinishedNumbers: () -> BooleanArray = {BooleanArray(getNumbers){false}},
+    val undoMove: () -> Unit = {},
+    val canUndo: () -> Boolean = {false},
+    val redoMove: () -> Unit = {},
+    val canRedo: () -> Boolean = {false},
+
+    )
 
 data class TimerActions(
     val onPauseTimer: () -> Unit = { },
@@ -167,7 +162,11 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         getBoxWidth = sudokuGame.boxWidth,
         getBoxHeight = sudokuGame.boxHeight,
         lives = sudokuViewModel.lifeCount,
-        getFinishedNumbers = {sudokuViewModel.finishedNumbers()}
+        getFinishedNumbers = {sudokuViewModel.finishedNumbers()},
+        undoMove = {sudokuViewModel.undoMove()},
+        canUndo = {sudokuViewModel.canUndo()},
+        redoMove = {sudokuViewModel.redoMove()},
+        canRedo = {sudokuViewModel.canRedo()}
     )
 
     //timer
@@ -756,7 +755,7 @@ fun SudokuCanvas(
 fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier){
     val colors = object {
         val number = MaterialTheme.colorScheme.surface
-        val numberFinished = MaterialTheme.colorScheme.onSurfaceVariant
+        val numberFinished = MaterialTheme.colorScheme.outline
     }
 
 
@@ -897,6 +896,11 @@ fun List<Int>.toChar(): List<Char>{
 
 @Composable
 fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
+    val colors = object {
+        val background = MaterialTheme.colorScheme.tertiaryContainer
+        val normal = MaterialTheme.colorScheme.onSurface
+        val disabled = MaterialTheme.colorScheme.outline
+    }
     Row(
         modifier = modifier
             .clip(shape = RoundedCornerShape(12.dp))
@@ -927,6 +931,33 @@ fun SudokuToolBar(modifier :Modifier, actions: SudokuActions){
             Icon(
                 painter = painterResource(id = R.drawable.ink_eraser),
                 contentDescription = "Erase"
+            )
+        }
+
+        val undoEnabled = actions.canUndo()
+        IconButton(
+            enabled = undoEnabled,
+            onClick = {
+               actions.undoMove()
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.undo),
+                tint = if(undoEnabled) colors.normal else colors.disabled,
+                contentDescription = "Undo"
+            )
+        }
+        val RedoEnabled = actions.canRedo()
+        IconButton(
+            enabled = RedoEnabled,
+            onClick = {
+                actions.redoMove()
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.redo),
+                tint = if(RedoEnabled) colors.normal else colors.disabled,
+                contentDescription = "Redo"
             )
         }
     }

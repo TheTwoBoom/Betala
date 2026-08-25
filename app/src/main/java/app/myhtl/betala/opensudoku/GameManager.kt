@@ -31,24 +31,26 @@ object GameManager {
         val originalList = data.toList()
 
 
-        fun changeValue(index: Int, value: Int) {
-            if(originalList[index] == 0) {
-                data[index] = value
+//        fun changeValue(index: Int, value: Int) {
+//            if(originalList[index] != 0) return
+//            data[index] = value
+//            if (value != 0) clearNotes(index)
+//            updateAttributes()
+//        }
 
-                if (value != 0) clearNotes(index)
-                updateAttributes()
-            }
-        }
-
-        fun changeValues(indices: Set<Int>, value: Int){
+        fun changeValues(indices: Set<Int>, value: Int): Boolean{
+            var counter = 0
             indices.forEach { index ->
-                if(originalList[index] == 0) {
+                if(originalList[index] == 0 && data[index] != value) {
                     data[index] = value
 
                     if (value != 0) clearNotes(index)
-                }
+                } else counter++
             }
+            if(counter == indices.size) return false
+
             updateAttributes()
+            return true
         }
 
         fun updateAttributes(){
@@ -58,22 +60,27 @@ object GameManager {
             } else false
         }
 
-        fun toggleNote(index: Int, value: Int) {
-            if(value !in 1 .. size && data[index] == 0) return
-            val noteArray = noteData[index]
-            noteArray[value - 1] = !noteData[index][value - 1]
-            noteData[index] = noteArray.copyOf()
+//        fun toggleNote(index: Int, value: Int) {
+//            if(value !in 1 .. size && data[index] == 0) return
+//            val noteArray = noteData[index]
+//            noteArray[value - 1] = !noteData[index][value - 1]
+//            noteData[index] = noteArray.copyOf()
+//
+//        }
 
-        }
-
-        fun toggleNotes(indices: Set<Int>, value: Int){
-            if(value !in 1 .. size) return
+        fun toggleNotes(indices: Set<Int>, value: Int): Boolean{
+            if(value !in 1 .. size) return false
+            var counter = 0
             indices.forEach { index ->
                 if (data[index] == 0) {
                     val noteArray = noteData[index]
                     noteArray[value - 1] = !noteData[index][value - 1]
                     noteData[index] = noteArray.copyOf()
-                }            }
+                }   else{
+                    counter++
+                }
+            }
+            return counter != indices.size
         }
         fun clearNotes(index: Int) {
             if(this.originalList[index] == 0) {
@@ -81,22 +88,35 @@ object GameManager {
             }
         }
 
-        fun clearNotes(indices: Set<Int>){
+        fun clearNotes(indices: Set<Int>): Boolean{
+            var counter = 0
             indices.forEach { index ->
-                clearNotes(index)
+                if(this.originalList[index] == 0 && noteData[index].any{ it }) {
+                    noteData[index] = BooleanArray(size) { false }
+                } else{
+                    counter++
+                }
             }
+
+            return counter != indices.size
         }
 
-        fun clearDataAt(index: Int) {
-            if(originalList[index] == 0 && data[index] != 0){
-                data[index] = 0
-            }
-        }
+//        fun clearDataAt(index: Int) {
+//            if(originalList[index] == 0 && data[index] != 0){
+//                data[index] = 0
+//            }
+//        }
 
-        fun clearDataAt(indices: Set<Int>){
+        fun clearDataAt(indices: Set<Int>): Boolean{
+            var counter = 0
             indices.forEach { index ->
-                clearDataAt(index)
+                if(originalList[index] == 0 && data[index] != 0){
+                    data[index] = 0
+                } else{
+                    counter++
+                }
             }
+            return counter != indices.size
         }
 
         fun checkCorrect(): List<Int> {
