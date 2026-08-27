@@ -40,11 +40,9 @@ fun SettingsScreen(navController: NavController){
     )
     val context = LocalContext.current
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
             Header(
@@ -89,8 +87,9 @@ fun SettingsScreen(navController: NavController){
                     }
                 }
             }
+            InfoText("Settings may not work currently")
             Text(
-                text = "Betala v0.0.1 \n" +
+                text = "Betala v0.0.4 \n" +
                         "Copyright © 2026 by the Betala Developers",
                 modifier = Modifier.padding(8.dp),
                 textAlign = TextAlign.Center
@@ -99,5 +98,5 @@ fun SettingsScreen(navController: NavController){
         }
 
 
-    }
+
 }

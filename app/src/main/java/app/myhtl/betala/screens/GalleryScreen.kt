@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -98,11 +99,9 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
     }
 
     // ARTapToPlace(sudokuList.first().games.first())
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Header(
@@ -197,7 +196,6 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
             if (GalleryManager.isLoading) {
                 Column(
                     Modifier
-                        .padding(innerPadding)
                         .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -270,5 +268,4 @@ fun GalleryScreen(navController: NavController, sudokuViewModel: SudokuViewModel
                 )
             }
         }
-    }
 }

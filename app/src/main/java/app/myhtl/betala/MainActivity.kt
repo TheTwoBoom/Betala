@@ -7,15 +7,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
@@ -31,8 +40,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
 import app.myhtl.betala.opensudoku.GalleryManager
 import app.myhtl.betala.screens.CurrentDevice
 import app.myhtl.betala.ui.theme.BetalaTheme
@@ -103,7 +115,17 @@ fun BetalaApp() {
 
     val windowSizeClass = adaptiveInfo.windowSizeClass
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val mainBackgroundColor = if(!isSystemInDarkTheme()) MaterialTheme.colorScheme.primaryContainer.copy(0.1f) else MaterialTheme.colorScheme.surface
     NavigationSuiteScaffold(
+        //main background for everything!
+        containerColor = mainBackgroundColor,
+        //navBar colors
+        navigationSuiteColors = NavigationSuiteDefaults.colors(
+            shortNavigationBarContainerColor = Color.Transparent,
+            navigationRailContainerColor = Color.Transparent
+        )
+        ,
         navigationSuiteItems = {
             AppMainDestinations.entries.forEach { destinations ->
                 item(
@@ -137,33 +159,45 @@ fun BetalaApp() {
             NavigationSuiteType.ShortNavigationBarCompact
         }
     ) {
-        val sudokuViewModel: SudokuViewModel = viewModel()
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent
+        ){ innerPadding ->
+            val sudokuViewModel: SudokuViewModel = viewModel()
+            //change padding here:
+            AppNavHost(navController, sudokuViewModel, Modifier.padding(innerPadding))
+        }
 
-        NavHost(
-            navController = navController,
-            startDestination = AppMainDestinations.HOME.route
-        ) {
-            composable(AppMainDestinations.HOME.route) {
-                HomeScreen(navController, sudokuViewModel)
-            }
-            composable(AppMainDestinations.SETTINGS.route) {
-                SettingsScreen(navController)
-            }
-            composable(AppMainDestinations.STORE.route) {
-                GalleryScreen(navController, sudokuViewModel)
-            }
-            composable(AppAdditionalDestinations.SUDOKU.route) {
-                SudokuScreen(navController, sudokuViewModel)
-            }
-            composable(AppAdditionalDestinations.GALLERY.route) {
-                GalleryScreen(navController, sudokuViewModel)
-            }
-            composable(AppAdditionalDestinations.WINSCREEN.route) {
-                WinScreen(navController, sudokuViewModel)
-            }
-            composable(AppAdditionalDestinations.SETRULES.route) {
-                SetSudokuRulesScreen(navController, sudokuViewModel)
-            }
+    }
+}
+
+@Composable
+fun AppNavHost(navController: NavHostController, sudokuViewModel: SudokuViewModel, modifier: Modifier = Modifier){
+    NavHost(
+        modifier = modifier,
+        navController = navController,
+        startDestination = AppMainDestinations.HOME.route
+    ) {
+        composable(AppMainDestinations.HOME.route) {
+            HomeScreen(navController, sudokuViewModel)
+        }
+        composable(AppMainDestinations.SETTINGS.route) {
+            SettingsScreen(navController)
+        }
+        composable(AppMainDestinations.STORE.route) {
+            GalleryScreen(navController, sudokuViewModel)
+        }
+        composable(AppAdditionalDestinations.SUDOKU.route) {
+            SudokuScreen(navController, sudokuViewModel)
+        }
+        composable(AppAdditionalDestinations.GALLERY.route) {
+            GalleryScreen(navController, sudokuViewModel)
+        }
+        composable(AppAdditionalDestinations.WINSCREEN.route) {
+            WinScreen(navController, sudokuViewModel)
+        }
+        composable(AppAdditionalDestinations.SETRULES.route) {
+            SetSudokuRulesScreen(navController, sudokuViewModel)
         }
     }
 }

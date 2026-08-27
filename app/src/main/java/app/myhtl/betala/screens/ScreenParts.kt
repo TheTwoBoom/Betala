@@ -12,19 +12,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -372,6 +378,32 @@ fun AboutDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun OurElevatedButton(modifier: Modifier = Modifier, onClick: () -> Unit = {}, colors: ButtonColors = ButtonDefaults.elevatedButtonColors(), content: @Composable (RowScope.() -> Unit)){
+    ElevatedButton(
+        modifier = modifier.height(50.dp),
+        colors = colors,
+        shape = CircleShape,
+        elevation = ButtonDefaults.elevatedButtonElevation(
+            defaultElevation = 3.dp,
+            pressedElevation = 1.dp
+        ),
+        onClick = onClick,
+        content = content
+    )
+}
+
+@Composable
+fun InfoText(text: String){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ){
+        Icon(painterResource(R.drawable.info), "Info", Modifier.size(15.dp))
+        Spacer(Modifier.size(3.dp))
+        Text(text)
     }
 }
 

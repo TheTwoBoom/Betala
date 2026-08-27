@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -64,9 +65,8 @@ fun SetSudokuRulesScreen(
     sudokuViewModel: SudokuViewModel,
     //furtherNavButton: @Composable (numbers: Int, selectedBoxWidth: Int, selectedBoxHeight: Int, text: String) -> Unit
 ){
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Header(
@@ -261,7 +261,6 @@ fun SetSudokuRulesScreen(
 
             }
         }
-    }
 }
 
 

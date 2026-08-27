@@ -72,6 +72,7 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     fun startNewGame(game: GameManager.SudokuGame){
         moveHistory.clear()
         moveFuture.clear()
+        updateUndoRedoFlags()
         // for safety leave old game
         leaveGame()
         pauseOrResumeTimer()
@@ -85,9 +86,10 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         lifeCount = 3
     }
 
-    fun continueGame(game: GameManager.SudokuGame, moveHistory: Stack<SudokuMove>, isFinished: Boolean = false, lifeCount: Int, errorArray: BooleanArray = BooleanArray(currentGame?.size ?: 0){false}, time: Int){
+    fun continueGame(game: GameManager.SudokuGame, moveHistory: Stack<SudokuMove>, moveFuture: Stack<SudokuMove>, isFinished: Boolean = false, lifeCount: Int, errorArray: BooleanArray = BooleanArray(currentGame?.size ?: 0){false}, time: Int){
         this.moveHistory = moveHistory
-        moveFuture.clear()
+        this.moveFuture = moveFuture
+        updateUndoRedoFlags()
         // for safety leave old game
         leaveGame()
         pauseOrResumeTimer()

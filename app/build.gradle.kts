@@ -43,6 +43,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.arsceneview)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)

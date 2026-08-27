@@ -240,7 +240,7 @@ object GameManager {
                                     val gameList = mutableStateListOf<Int>().apply {
                                         addAll(parsedValues)
                                     }
-                                    SudokuGame(gameList, ImageBitmap(1, 1))
+                                    SudokuGame(gameList, ImageBitmap(1, 1), name = name)
                                 }
 
                                 games.add(game)

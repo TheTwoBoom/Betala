@@ -5,15 +5,19 @@ import android.app.Activity
 import android.util.Log
 import android.view.View
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -62,54 +66,89 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
     var bannerAdState by remember { mutableStateOf<BannerAd?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 24.dp, top = 48.dp, bottom = 0.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Header(
-            text = "Betala",
-            navController = navController,
-            textComposable = {
-                Text(
-                    text = "BETALA",
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 32.sp,
-                    fontFamily = FontFamily(Font(R.font.majormonodisplay)),
-                )
-            },
-            leftButton = {},
-            rightButton = {
-                IconButton(
-                    onClick = {},
-                    shapes = IconButtonDefaults.shapes(
-                        IconButtonDefaults.largeSquareShape,
+        Column() {
+            Header(
+                text = "Betala",
+                navController = navController,
+                textComposable = {
+                    Text(
+                        text = "BETALA",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 32.sp,
+                        fontFamily = FontFamily(Font(R.font.majormonodisplay)),
                     )
-                ) {
-                    Icon(painterResource(R.drawable.account_box), "Account")
+                },
+                leftButton = {},
+                rightButton = {
+                    IconButton(
+                        onClick = {},
+                        shapes = IconButtonDefaults.shapes(
+                            IconButtonDefaults.largeSquareShape,
+                        )
+                    ) {
+                        Icon(painterResource(R.drawable.account_box), "Account")
+                    }
                 }
-            }
-        )
-        SudokuCarousel(
-            text = "Sudokus of the Day",
-            items = GalleryManager.allSudokus,
-            navController = navController,
-            sudokuViewModel = sudokuViewModel,
-            isLoading = GalleryManager.isLoading
-        )
-        OutlinedCard(
-            modifier = Modifier
-                .padding(top = 5.dp, bottom = 5.dp)
-                .clickable(true) {
+            )
+            SudokuCarousel(
+                text = "Sudokus of the Day",
+                items = GalleryManager.allSudokus,
+                navController = navController,
+                sudokuViewModel = sudokuViewModel,
+                isLoading = GalleryManager.isLoading
+            )
+        }
 
-                    sudokuViewModel.sudokuMode = SudokuMode.GENERATOR
-                    navController.navigate(AppAdditionalDestinations.SETRULES.route)
-                }
-        ) {
-            Row(
+        Column(modifier = Modifier.padding(bottom = 30.dp)) {
+            OurElevatedButton(
+                modifier = Modifier.fillMaxWidth(0.8f)
+                    .padding(vertical = 7.dp),
+                onClick = {
+                    navController.navigate(AppAdditionalDestinations.GALLERY.route)
+                },
+            ) {
+                Icon(painterResource(R.drawable.puzzle), "Puzzle")
+                Text(
+                    modifier = Modifier.padding(start = 6.dp),
+                    text = stringResource(R.string.select_level)
+                )
+
+            }
+
+            OurElevatedButton(
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                    .padding(vertical = 7.dp),
+                onClick = {
+                    sudokuViewModel.sudokuMode = SudokuMode.CREATOR
+                    navController.navigate(AppAdditionalDestinations.SETRULES.route)
+                }
+            ) {
+                Icon(painterResource(R.drawable.note_add), "Add")
+                Text(
+                    modifier = Modifier.padding(start = 6.dp),
+                    text = stringResource(R.string.create_Sudoku)
+                )
+            }
+
+            OurElevatedButton(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(vertical = 7.dp),
+                onClick =  {
+                    sudokuViewModel.sudokuMode = SudokuMode.GENERATOR
+                    navController.navigate(AppAdditionalDestinations.SETRULES.route)
+                },
+                colors = ButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.outline,
+                    disabledContentColor = MaterialTheme.colorScheme.outline
+                )
             ) {
                 Icon(painterResource(R.drawable.dice), "Dice")
                 Text(
@@ -117,68 +156,34 @@ fun HomeScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
                     text = stringResource(R.string.new_sudoku)
                 )
             }
-        }
-
-            OutlinedCard(
-                modifier = Modifier
-                    .padding(top = 5.dp, bottom = 5.dp)
-                    .clickable(true) {
-                        navController.navigate(AppAdditionalDestinations.GALLERY.route)
-                    }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(15.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(painterResource(R.drawable.puzzle), "Puzzle")
-                    Text(
-                        modifier = Modifier.padding(start = 6.dp),
-                        text = stringResource(R.string.select_level)
-                    )
-                }
+            //remove if darkTheme is finished
+            if(isSystemInDarkTheme()){
+                Spacer(Modifier.size(5.dp))
+                InfoText("Dark theme is not yet fully developed")
             }
-            OutlinedCard(
-                modifier = Modifier
-                    .padding(top = 5.dp, bottom = 5.dp)
-                    .clickable {
-                        sudokuViewModel.sudokuMode = SudokuMode.CREATOR
-                        navController.navigate(AppAdditionalDestinations.SETRULES.route)
-                    }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(15.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(painterResource(R.drawable.note_add), "Add")
-                    Text(
-                        modifier = Modifier.padding(start = 6.dp),
-                        text = stringResource(R.string.new_sudoku)
-                    )
-                }
         }
 
 
-        Column(
-            Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Bottom
-        ) {
-            bannerAdState?.let { bannerAd ->
-                Box(
-                    modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center,
-                ) {
-                    AndroidView(
-                        modifier = Modifier.wrapContentSize(),
-                        factory = { ctx ->
-                            activity?.let { bannerAd.getView(it) } ?: View(ctx)
-                        },
-                    )
+        if(bannerAdState != null){
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                bannerAdState?.let { bannerAd ->
+                    Box(
+                        modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center,
+                    ) {
+                        AndroidView(
+                            modifier = Modifier.wrapContentSize(),
+                            factory = { ctx ->
+                                activity?.let { bannerAd.getView(it) } ?: View(ctx)
+                            },
+                        )
+                    }
                 }
             }
         }
+
 
         val adSize = AdSize.MEDIUM_RECTANGLE
 
