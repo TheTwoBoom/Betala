@@ -22,16 +22,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -51,7 +48,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -69,6 +65,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily.Companion.Monospace
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -102,11 +99,11 @@ data class SudokuActions(
     val getBoxHeight: Int = sqrt(getNumbers.toDouble()).toInt(),
     val getBoxWidth: Int = sqrt(getNumbers.toDouble()).toInt(),
     val lives: Int = 0,
-    val getFinishedNumbers: () -> BooleanArray = {BooleanArray(getNumbers){false}},
+    val getFinishedNumbers: () -> BooleanArray = { BooleanArray(getNumbers) { false } },
     val undoMove: () -> Unit = {},
-    val canUndo: () -> Boolean = {false},
+    val canUndo: () -> Boolean = { false },
     val redoMove: () -> Unit = {},
-    val canRedo: () -> Boolean = {false},
+    val canRedo: () -> Boolean = { false },
 
     )
 
@@ -118,12 +115,12 @@ data class TimerActions(
 
 
 @Composable
-fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
+fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel) {
 
     sudokuViewModel.updateIsFinishedAndCorrect()
     LaunchedEffect(sudokuViewModel.isFinishedAndCorrect) {
         if (sudokuViewModel.isFinishedAndCorrect) {
-            if(sudokuViewModel.isRunning.value) sudokuViewModel.pauseOrResumeTimer()
+            if (sudokuViewModel.isRunning.value) sudokuViewModel.pauseOrResumeTimer()
             navController.navigate(AppAdditionalDestinations.WINSCREEN.route)
         }
     }
@@ -149,33 +146,33 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         navController.popBackStack()
     }
 
-    val sudokuGame = sudokuViewModel.currentGame?: return
+    val sudokuGame = sudokuViewModel.currentGame ?: return
     val rowCount = sudokuGame.size
     val columnCount = sudokuGame.size
     val cells = sudokuGame.data
     val cellNotes = sudokuGame.noteData
 
     val actions = SudokuActions(
-        setIndex = {sudokuViewModel.setIndex(it)},
-        addIndex = {sudokuViewModel.addIndex(it)},
-        onNumberSelected = {sudokuViewModel.onNumberSelected(it)},
-        toggleNoteMode = {sudokuViewModel.toggleNoteMode()},
-        hasError = {sudokuViewModel.hasError(it)},
-        isEditable = {sudokuViewModel.isEditable(it)},
+        setIndex = { sudokuViewModel.setIndex(it) },
+        addIndex = { sudokuViewModel.addIndex(it) },
+        onNumberSelected = { sudokuViewModel.onNumberSelected(it) },
+        toggleNoteMode = { sudokuViewModel.toggleNoteMode() },
+        hasError = { sudokuViewModel.hasError(it) },
+        isEditable = { sudokuViewModel.isEditable(it) },
         originalNumbers = sudokuGame.originalList.map { it != 0 },
-        sameValue = {sudokuViewModel.sameValue(it)},
+        sameValue = { sudokuViewModel.sameValue(it) },
         isNoteMode = sudokuViewModel.isNoteMode,
-        erase = {sudokuViewModel.eraseCell()},
+        erase = { sudokuViewModel.eraseCell() },
         isFinishedAndCorrect = sudokuViewModel.isFinishedAndCorrect,
         getNumbers = sudokuGame.size,
         getBoxWidth = sudokuGame.boxWidth,
         getBoxHeight = sudokuGame.boxHeight,
         lives = sudokuViewModel.lifeCount,
-        getFinishedNumbers = {sudokuViewModel.finishedNumbers()},
-        undoMove = {sudokuViewModel.undoMove()},
-        canUndo = {sudokuViewModel.canUndo()},
-        redoMove = {sudokuViewModel.redoMove()},
-        canRedo = {sudokuViewModel.canRedo()}
+        getFinishedNumbers = { sudokuViewModel.finishedNumbers() },
+        undoMove = { sudokuViewModel.undoMove() },
+        canUndo = { sudokuViewModel.canUndo() },
+        redoMove = { sudokuViewModel.redoMove() },
+        canRedo = { sudokuViewModel.canRedo() }
     )
 
     //timer
@@ -189,207 +186,226 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
     )
 
 
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    val time = String.format(java.util.Locale.GERMANY, "%02d:%02d", minutes, seconds)
 
-    val minutes = totalSeconds/60
-    val seconds = totalSeconds%60
-    val time = String.format("%02d:%02d", minutes,seconds)
+    if (CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT) {
+        Column(
+            Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
 
-        if (CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT) {
+            TopRow(
+                navController,
+                sudokuGame.name,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .padding(horizontal = 5.dp),
+                timer = time,
+                timerActions = timerActions
+            )
             Column(
-                Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
 
-                TopRow(navController, sudokuGame.name, modifier = Modifier.padding(top = 10.dp).padding(horizontal = 5.dp), timer = time, timerActions = timerActions)
                 Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly
+                    Modifier
+                        .shadow(elevation = 2.dp)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(vertical = 15.dp)
+
                 ) {
-
-                    Column(
-                        Modifier.shadow(elevation = 2.dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(vertical = 15.dp)
-
-                    ){
-                        SecondTopRow(
-                            lives = sudokuViewModel.lifeCount,
-                            difficulty = sudokuViewModel.difficulty.label,
-                            sudokuSize = sudokuGame.size,
-                            sudokuVariant = sudokuViewModel.variant.icon
-                        )
-                        Spacer(Modifier.size(5.dp))
-                        if(timerActions.timerIsRunning) {
-                            SudokuCanvas(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp),
-                                cells = cells,
-                                cellNotes = cellNotes,
-                                actions = actions,
-                                selectedCell = sudokuViewModel.selectedIndex,
-                                selectedCells = sudokuViewModel.selectedIndices,
-                            )
-                        }else{
-                            EmptySudokuCanvas(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp),
-                                actions = actions,
-                                timerActions = timerActions
-                            )
-                        }
-                    }
-
-                    //Spacer(Modifier.size(15.dp))
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ){
-                    SudokuToolBar(actions)
-                        //temporary solveButton
-                        ElevatedButton(
-                            modifier = Modifier.height(50.dp),
-                            colors = ButtonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSurface,
-                                disabledContainerColor = MaterialTheme.colorScheme.outline,
-                                disabledContentColor = MaterialTheme.colorScheme.outline
-                            ),
-                            shape = CircleShape,
-                            elevation = ButtonDefaults.elevatedButtonElevation(
-                                defaultElevation = 3.dp,
-                                pressedElevation = 1.dp
-                            ),
-                            onClick = {
-                                val newData = Array(columnCount) { IntArray(rowCount) }
-                                for(i in 0 until sudokuGame.data.size){
-                                    val row = i/rowCount
-                                    val column = i%columnCount
-                                    newData[row][column] = sudokuGame.data[i]
-                                }
-                                //change to data
-                                val so = SudokuSolver(inputData = newData, solveOnInit = true, boxWidth = sudokuGame.boxWidth, boxHeight = sudokuGame.boxHeight)
-
-                                val d = so.data
-                                for(i in 0 until sudokuGame.data.size){
-                                    val row = i/rowCount
-                                    val column = i%columnCount
-                                    actions.setIndex(i)
-                                    actions.onNumberSelected(d[row][column])
-                                }
-                                    actions.toggleNoteMode()
-
-                                val n = so.notes
-
-                                for(i in 0 until sudokuGame.data.size){
-                                    val row = i/rowCount
-                                    val column = i%columnCount
-                                    actions.setIndex(i)
-                                    for(j in 0 until rowCount){
-                                        if(n[row][column][j]){
-                                            actions.onNumberSelected(j+1)
-                                        }
-
-                                    }
-                                }
-
-                                actions.toggleNoteMode()
-                            }
-                        ){
-                            Text("Solve")
-                        }
-                }
-                    NumRow(
-                        numbers = (1 .. sudokuGame.size).map { it },
-                        actions = actions
+                    SecondTopRow(
+                        lives = sudokuViewModel.lifeCount,
+                        difficulty = sudokuViewModel.difficulty.label,
+                        sudokuSize = sudokuGame.size,
+                        sudokuVariant = sudokuViewModel.variant.icon
                     )
-                }
-
-            }
-            }else{
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
-                )
-                {
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.SpaceAround,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(1f)
-                    ) {
-                        TopRow(
-                            navController = navController,
-                            name = sudokuGame.name,
+                    Spacer(Modifier.size(5.dp))
+                    if (timerActions.timerIsRunning) {
+                        SudokuCanvas(
                             modifier = Modifier
-                                .padding(top = 10.dp)
-                                .padding(horizontal = 5.dp),
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp),
+                            cells = cells,
+                            cellNotes = cellNotes,
+                            actions = actions,
+                            selectedCell = sudokuViewModel.selectedIndex,
+                            selectedCells = sudokuViewModel.selectedIndices,
+                        )
+                    } else {
+                        EmptySudokuCanvas(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp),
+                            actions = actions,
                             timerActions = timerActions
                         )
-                        SecondTopRow(
-                            lives = sudokuViewModel.lifeCount,
-                            difficulty = sudokuViewModel.difficulty.label,
-                            sudokuSize = sudokuGame.size,
-                            sudokuVariant = sudokuViewModel.variant.icon
-                        )
-
-                        Timer(timer = time, timerActions = timerActions)
-                        Spacer(Modifier.size(10.dp))
-                        SudokuToolBar(actions)
-                        NumRow(
-                            modifier = Modifier,
-                            numbers = (1 .. sudokuGame.size).map { it },
-                            actions = actions
-                        )
-                        Spacer(Modifier.size(10.dp))
-                        }
-
-                    Row(
-                        Modifier.shadow(elevation = 2.dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = 15.dp)
-                    ){
-                        if (timerActions.timerIsRunning) {
-                            SudokuCanvas(
-                                Modifier
-                                    .fillMaxHeight()
-                                    .padding(vertical = 10.dp)
-                                    .padding(end = 20.dp),
-                                cells = cells,
-                                cellNotes = cellNotes,
-                                actions = actions,
-                                selectedCell = sudokuViewModel.selectedIndex,
-                                selectedCells = sudokuViewModel.selectedIndices,
-                            )
-                        }
-                        else{
-                            EmptySudokuCanvas(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(vertical = 10.dp)
-                                    .padding(end = 20.dp),
-                                actions = actions,
-                                timerActions = timerActions
-                            )
-                        }
                     }
-
                 }
+
+                //Spacer(Modifier.size(15.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    SudokuToolBar(actions)
+                    //temporary solveButton
+                    ElevatedButton(
+                        modifier = Modifier.height(50.dp),
+                        colors = ButtonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            disabledContainerColor = MaterialTheme.colorScheme.outline,
+                            disabledContentColor = MaterialTheme.colorScheme.outline
+                        ),
+                        shape = CircleShape,
+                        elevation = ButtonDefaults.elevatedButtonElevation(
+                            defaultElevation = 3.dp,
+                            pressedElevation = 1.dp
+                        ),
+                        onClick = {
+                            val newData = Array(columnCount) { IntArray(rowCount) }
+                            for (i in 0 until sudokuGame.data.size) {
+                                val row = i / rowCount
+                                val column = i % columnCount
+                                newData[row][column] = sudokuGame.data[i]
+                            }
+                            //change to data
+                            val so = SudokuSolver(
+                                inputData = newData,
+                                solveOnInit = true,
+                                boxWidth = sudokuGame.boxWidth,
+                                boxHeight = sudokuGame.boxHeight
+                            )
+
+                            val d = so.data
+                            for (i in 0 until sudokuGame.data.size) {
+                                val row = i / rowCount
+                                val column = i % columnCount
+                                actions.setIndex(i)
+                                actions.onNumberSelected(d[row][column])
+                            }
+                            actions.toggleNoteMode()
+
+                            val n = so.notes
+
+                            for (i in 0 until sudokuGame.data.size) {
+                                val row = i / rowCount
+                                val column = i % columnCount
+                                actions.setIndex(i)
+                                for (j in 0 until rowCount) {
+                                    if (n[row][column][j]) {
+                                        actions.onNumberSelected(j + 1)
+                                    }
+
+                                }
+                            }
+
+                            actions.toggleNoteMode()
+                        }
+                    ) {
+                        Text("Solve")
+                    }
+                }
+                NumRow(
+                    numbers = (1..sudokuGame.size).map { it },
+                    actions = actions
+                )
+            }
+
+        }
+    } else {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+        )
+        {
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
+                TopRow(
+                    navController = navController,
+                    name = sudokuGame.name,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(horizontal = 5.dp),
+                    timerActions = timerActions
+                )
+                SecondTopRow(
+                    lives = sudokuViewModel.lifeCount,
+                    difficulty = sudokuViewModel.difficulty.label,
+                    sudokuSize = sudokuGame.size,
+                    sudokuVariant = sudokuViewModel.variant.icon
+                )
+
+                Timer(timer = time, timerActions = timerActions)
+                Spacer(Modifier.size(10.dp))
+                SudokuToolBar(actions)
+                NumRow(
+                    modifier = Modifier,
+                    numbers = (1..sudokuGame.size).map { it },
+                    actions = actions
+                )
+                Spacer(Modifier.size(10.dp))
+            }
+
+            Row(
+                Modifier
+                    .shadow(elevation = 2.dp)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 15.dp)
+            ) {
+                if (timerActions.timerIsRunning) {
+                    SudokuCanvas(
+                        Modifier
+                            .fillMaxHeight()
+                            .padding(vertical = 10.dp)
+                            .padding(end = 20.dp),
+                        cells = cells,
+                        cellNotes = cellNotes,
+                        actions = actions,
+                        selectedCell = sudokuViewModel.selectedIndex,
+                        selectedCells = sudokuViewModel.selectedIndices,
+                    )
+                } else {
+                    EmptySudokuCanvas(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(vertical = 10.dp)
+                            .padding(end = 20.dp),
+                        actions = actions,
+                        timerActions = timerActions
+                    )
+                }
+            }
+
+        }
     }
 }
 
 @Composable
-fun TopRow(navController: NavController, name: String, timer: String = "", timerActions: TimerActions, modifier: Modifier = Modifier){
+fun TopRow(
+    navController: NavController,
+    name: String,
+    modifier: Modifier = Modifier,
+    timer: String = "",
+    timerActions: TimerActions,
+) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -408,17 +424,18 @@ fun TopRow(navController: NavController, name: String, timer: String = "", timer
             )
         }
 
-        Text(text = name,
+        Text(
+            text = name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
             fontSize = 20.sp,
             fontWeight = FontWeight(350),
             modifier = Modifier.weight(1f)
-            )
+        )
 
         //for timer
-        if(timer.isNotEmpty()){
+        if (timer.isNotEmpty()) {
             Timer(timer = timer, timerActions = timerActions)
         }
 
@@ -448,30 +465,30 @@ fun TopRow(navController: NavController, name: String, timer: String = "", timer
 }
 
 @Composable
-fun Timer(timer: String, timerActions: TimerActions){
+fun Timer(timer: String, timerActions: TimerActions) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp)
-    ){
+    ) {
         /*Icon(
             painter = painterResource(id = R.drawable.timer),
             contentDescription = "Timer",
             modifier = Modifier.size(20.dp)
         )*/
-        Text(text = timer, fontFamily = Monospace )
+        Text(text = timer, fontFamily = Monospace)
         IconButton(
             modifier = Modifier.size(25.dp),
             onClick = {
                 timerActions.onPauseTimer()
             }
         ) {
-            if(timerActions.timerIsRunning){
+            if (timerActions.timerIsRunning) {
                 Icon(
                     painter = painterResource(id = R.drawable.pause),
                     contentDescription = "Pause",
                     modifier = Modifier.size(20.dp)
                 )
-            }else{
+            } else {
                 Icon(
                     painter = painterResource(id = R.drawable.resume),
                     contentDescription = "Start",
@@ -485,13 +502,20 @@ fun Timer(timer: String, timerActions: TimerActions){
 }
 
 @Composable
-fun SecondTopRow(lives: Int, difficulty: Int, sudokuSize: Int, modifier: Modifier = Modifier, sudokuVariant: Int){
+fun SecondTopRow(
+    lives: Int,
+    difficulty: Int,
+    sudokuSize: Int,
+    modifier: Modifier = Modifier,
+    sudokuVariant: Int
+) {
     val primaryColor = MaterialTheme.colorScheme.primary
-    Row(modifier = modifier.fillMaxWidth(),
+    Row(
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
-    ){
-        Row{
+    ) {
+        Row {
             Icon(
                 painter = painterResource(id = R.drawable.heart_filled),
                 tint = MaterialTheme.colorScheme.primary,
@@ -518,7 +542,7 @@ fun EmptySudokuCanvas(
     modifier: Modifier = Modifier,
     actions: SudokuActions,
     timerActions: TimerActions
-){
+) {
     val numbers = actions.getNumbers
     val boxWidth = actions.getBoxWidth
     val boxHeight = actions.getBoxHeight
@@ -543,10 +567,10 @@ fun EmptySudokuCanvas(
 
         val cellSize = size.width / numbers
 
-        for(i in 1..numbers-1){
-            val thicknessX = if(i%boxWidth == 0) 2.dp else 0.5.dp
-            val thicknessY = if(i%boxHeight == 0) 2.dp else 0.5.dp
-            val position = i*cellSize
+        for (i in 1..numbers - 1) {
+            val thicknessX = if (i % boxWidth == 0) 2.dp else 0.5.dp
+            val thicknessY = if (i % boxHeight == 0) 2.dp else 0.5.dp
+            val position = i * cellSize
 
             drawLine(
                 color = lineColor,
@@ -568,7 +592,11 @@ fun EmptySudokuCanvas(
         val x = (size.width - iconSize.width) / 2
         val y = (size.height - iconSize.height) / 2
 
-        drawCircle(radius = 150f, color = iconBackgroundColor, center = Offset(size.width/2, size.height/2))
+        drawCircle(
+            radius = 150f,
+            color = iconBackgroundColor,
+            center = Offset(size.width / 2, size.height / 2)
+        )
         translate(left = x, top = y) {
             with(iconPainter) {
                 draw(
@@ -580,6 +608,7 @@ fun EmptySudokuCanvas(
 
     }
 }
+
 @Composable
 fun SudokuCanvas(
     modifier: Modifier = Modifier,
@@ -588,7 +617,7 @@ fun SudokuCanvas(
     actions: SudokuActions,
     selectedCell: Int,
     selectedCells: Set<Int>
-){
+) {
     val textMeasurer = rememberTextMeasurer()
     val numbers = actions.getNumbers
     val boxWidth = actions.getBoxWidth
@@ -606,22 +635,21 @@ fun SudokuCanvas(
         val sameValueColor = MaterialTheme.colorScheme.tertiaryContainer
     }
 
-    fun getIndexWithOffset(offset: Offset, size: IntSize): Int{
-        val cellSize = size.width/numbers
-        val col = floor(offset.x/cellSize).toInt()
-        val row = floor(offset.y/cellSize).toInt()
+    fun getIndexWithOffset(offset: Offset, size: IntSize): Int {
+        val cellSize = size.width / numbers
+        val col = floor(offset.x / cellSize).toInt()
+        val row = floor(offset.y / cellSize).toInt()
 
 
-        if(col in 0 until numbers && row in 0 until numbers){
-            return row*numbers + col
-        }
-        else{
+        if (col in 0 until numbers && row in 0 until numbers) {
+            return row * numbers + col
+        } else {
             return -1
         }
     }
 
     var lastIndex by remember { mutableIntStateOf(-1) }
-    val chars = remember { List(numbers) {it+1}.toChar()}
+    val chars = remember { List(numbers) { it + 1 }.toChar() }
 
     Canvas(
         modifier = modifier
@@ -654,15 +682,18 @@ fun SudokuCanvas(
 
                 )
             }
-    ){
-         val cellSize = size.width / numbers
+    ) {
+        val cellSize = size.width / numbers
 
         //cash text for better performance, so it doesn't have to render for each cell
-        val mainTextStyle = TextStyle(fontSize = (cellSize * 0.6f).toSp(),
+        val mainTextStyle = TextStyle(
+            fontSize = (cellSize * 0.6f).toSp(),
             platformStyle = PlatformTextStyle(includeFontPadding = false),
-            textAlign = TextAlign.Center)
+            textAlign = TextAlign.Center
+        )
 
-        val noteTextStyle = TextStyle(fontSize = (cellSize * 0.28f).toSp(),
+        val noteTextStyle = TextStyle(
+            fontSize = (cellSize * 0.28f).toSp(),
             color = colors.onSurface,
             platformStyle = PlatformTextStyle(includeFontPadding = false),
             textAlign = TextAlign.Center
@@ -694,11 +725,11 @@ fun SudokuCanvas(
         }
 
 
-        for(i in 0 until numbers*numbers){
-            val row = i/numbers
-            val col = i%numbers
-            val bRow = row/boxHeight
-            val bCol = col/boxWidth
+        for (i in 0 until numbers * numbers) {
+            val row = i / numbers
+            val col = i % numbers
+            val bRow = row / boxHeight
+            val bCol = col / boxWidth
             //Draw Colors
             val shouldHighlight = (row == commonRow && commonRow != -1) ||
                     (col == commonCol) ||
@@ -716,14 +747,14 @@ fun SudokuCanvas(
             color?.let {
                 drawRect(
                     color = it,
-                    topLeft = Offset(col*cellSize, row*cellSize),
+                    topLeft = Offset(col * cellSize, row * cellSize),
                     size = Size(cellSize, cellSize)
                 )
             }
 
             //Draw numbers
-            if(cells[i] != 0){
-                val color = if(originalNumbers[i]) colors.lineColor else colors.onSurface
+            if (cells[i] != 0) {
+                val color = if (originalNumbers[i]) colors.lineColor else colors.onSurface
 
                 val textLayout = mainTextCache[cells[i] - 1]
                 val textOffset = Offset(
@@ -733,9 +764,9 @@ fun SudokuCanvas(
                 drawText(textLayoutResult = textLayout, topLeft = textOffset, color = color)
             }
             //Draw notes
-            else if(cellNotes[i].count{ it } != 0){
-                for(j in 0 until numbers){
-                    if(cellNotes[i][j]){
+            else if (cellNotes[i].count { it } != 0) {
+                for (j in 0 until numbers) {
+                    if (cellNotes[i][j]) {
                         val textLayout = noteTextCache[j]
 
                         val subCellWidth = cellSize / boxWidth
@@ -745,7 +776,8 @@ fun SudokuCanvas(
                         val subRow = j / boxWidth
 
                         val centerX = col * cellSize + (subCol * subCellWidth) + (subCellWidth / 2)
-                        val centerY = row * cellSize + (subRow * subCellHeight) + (subCellHeight / 2)
+                        val centerY =
+                            row * cellSize + (subRow * subCellHeight) + (subCellHeight / 2)
 
 
                         val textOffset = Offset(
@@ -754,10 +786,13 @@ fun SudokuCanvas(
                         )
 
                         // backgroundColor
-                        if(selectedCells.isEmpty() && actions.sameValue(j+1)){
+                        if (selectedCells.isEmpty() && actions.sameValue(j + 1)) {
                             drawRect(
                                 color = colors.sameValueColor,
-                                topLeft = Offset(col * cellSize + (subCol * subCellWidth), row * cellSize + (subRow * subCellHeight)),
+                                topLeft = Offset(
+                                    col * cellSize + (subCol * subCellWidth),
+                                    row * cellSize + (subRow * subCellHeight)
+                                ),
                                 size = Size(subCellWidth, subCellHeight)
                             )
                         }
@@ -772,10 +807,10 @@ fun SudokuCanvas(
 
 
         //Draw lines
-        for(i in 1..numbers-1){
-            val thicknessX = if(i%boxWidth == 0) 2.dp else 0.5.dp
-            val thicknessY = if(i%boxHeight == 0) 2.dp else 0.5.dp
-            val position = i*cellSize
+        for (i in 1..numbers - 1) {
+            val thicknessX = if (i % boxWidth == 0) 2.dp else 0.5.dp
+            val thicknessY = if (i % boxHeight == 0) 2.dp else 0.5.dp
+            val position = i * cellSize
 
             drawLine(
                 color = colors.lineColor,
@@ -798,7 +833,7 @@ fun SudokuCanvas(
 }
 
 @Composable
-fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier = Modifier){
+fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier = Modifier) {
     val colors = object {
         val number = MaterialTheme.colorScheme.surface
         val numberFinished = MaterialTheme.colorScheme.outline
@@ -818,10 +853,10 @@ fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier = Modi
     val finishedNumbers = actions.getFinishedNumbers()
 
 
-    if(CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT) {
+    if (CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT) {
         val maxItemsPerRow = 9
-        val estimatedRows = (numbers.size + maxItemsPerRow -1) / maxItemsPerRow
-        val itemHeight = when (estimatedRows){
+        val estimatedRows = (numbers.size + maxItemsPerRow - 1) / maxItemsPerRow
+        val itemHeight = when (estimatedRows) {
             1 -> 50.dp
             2 -> 35.dp
             else -> 28.dp
@@ -830,11 +865,11 @@ fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier = Modi
 
         val itemsPerRow = (numbers.size + estimatedRows - 1) / estimatedRows
 
-        val increment = if(estimatedRows == 1) 18 - itemsPerRow*2 else 0
+        val increment = if (estimatedRows == 1) 18 - itemsPerRow * 2 else 0
         val fontSize = if (actions.isNoteMode) {
-            (15+increment/1.5).sp
+            (15 + increment / 1.5).sp
         } else {
-            (30+increment).sp
+            (30 + increment).sp
         }
 
         val chunks = numbers.chunked(itemsPerRow)
@@ -854,7 +889,8 @@ fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier = Modi
             chunks.forEach { rowNumbers ->
                 Row(horizontalArrangement = Arrangement.SpaceEvenly) {
                     rowNumbers.forEach { number ->
-                        val color = if (finishedNumbers[number-1]) colors.numberFinished else colors.number
+                        val color =
+                            if (finishedNumbers[number - 1]) colors.numberFinished else colors.number
 
                         Box(
                             modifier = Modifier
@@ -911,7 +947,8 @@ fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier = Modi
             chunks.forEach { rowNumbers ->
                 Row(horizontalArrangement = Arrangement.SpaceEvenly) {
                     rowNumbers.forEach { number ->
-                        val color = if (finishedNumbers[number-1]) colors.numberFinished else colors.number
+                        val color =
+                            if (finishedNumbers[number - 1]) colors.numberFinished else colors.number
 
                         Box(
                             modifier = Modifier
@@ -937,19 +974,19 @@ fun NumRow(numbers: List<Int>, actions: SudokuActions, modifier: Modifier = Modi
 }
 
 
-fun List<Int>.toChar(): List<Char>{
+fun List<Int>.toChar(): List<Char> {
     return this.map { number ->
-        if(number in 0..9){
+        if (number in 0..9) {
             number.digitToChar()
-        } else{
-            ('A'.code + number-10).toChar()
+        } else {
+            ('A'.code + number - 10).toChar()
         }
     }
 }
 
 
 @Composable
-fun SudokuToolBar(actions: SudokuActions, modifier: Modifier = Modifier){
+fun SudokuToolBar(actions: SudokuActions, modifier: Modifier = Modifier) {
     val colors = object {
         val background = MaterialTheme.colorScheme.tertiaryContainer
         val normal = MaterialTheme.colorScheme.onSurface
@@ -960,8 +997,7 @@ fun SudokuToolBar(actions: SudokuActions, modifier: Modifier = Modifier){
             .height(50.dp)
             .shadow(elevation = 3.dp, shape = CircleShape)
             .clip(shape = CircleShape)
-            .background(color = MaterialTheme.colorScheme.tertiaryContainer)
-        ,
+            .background(color = MaterialTheme.colorScheme.tertiaryContainer),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
@@ -999,13 +1035,13 @@ fun SudokuToolBar(actions: SudokuActions, modifier: Modifier = Modifier){
             modifier = Modifier.size(50.dp),
             enabled = undoEnabled,
             onClick = {
-               actions.undoMove()
+                actions.undoMove()
             }
         ) {
             Icon(
                 modifier = Modifier.size(30.dp),
                 painter = painterResource(id = R.drawable.undo),
-                tint = if(undoEnabled) colors.normal else colors.disabled,
+                tint = if (undoEnabled) colors.normal else colors.disabled,
                 contentDescription = "Undo"
             )
         }
@@ -1020,7 +1056,7 @@ fun SudokuToolBar(actions: SudokuActions, modifier: Modifier = Modifier){
             Icon(
                 modifier = Modifier.size(30.dp),
                 painter = painterResource(id = R.drawable.redo),
-                tint = if(RedoEnabled) colors.normal else colors.disabled,
+                tint = if (RedoEnabled) colors.normal else colors.disabled,
                 contentDescription = "Redo"
             )
         }

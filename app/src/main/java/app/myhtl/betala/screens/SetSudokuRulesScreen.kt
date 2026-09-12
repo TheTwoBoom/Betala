@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -21,7 +22,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.myhtl.betala.AppAdditionalDestinations
@@ -82,7 +84,12 @@ fun SetSudokuRulesScreen(
                     alignment = Alignment.CenterVertically
                 )
             ) {
-
+                val nameState = rememberTextFieldState(initialSelection = TextRange(0, 12))
+                OutlinedTextField(
+                    state = nameState,
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                    label = { Text("Sudoku Name") },
+                )
 
                 val variantItems = remember {
                     listOf(
@@ -223,7 +230,6 @@ fun SetSudokuRulesScreen(
                         }
                     }
                 } else {
-                    val creationText = stringResource(R.string.generated)
                     Button(
                         onClick = {
                             sudokuViewModel.variant = selectedVariant.variant
@@ -237,7 +243,7 @@ fun SetSudokuRulesScreen(
                             // would else be empty
                             val sudoku = GameManager.SudokuGame(
                                 data = generator.getRandomSudoku(),
-                                name = creationText,
+                                name = nameState.text.toString(),
                                 boxWidth = selectedBoxWidth,
                                 boxHeight = selectedBoxHeight
                             )
