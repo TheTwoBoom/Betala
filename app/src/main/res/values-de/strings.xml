@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Betala</string>
     <string name="settings">Einstellungen</string>
     <string name="favorites">Favoriten</string>
     <string name="new_sudoku">Neues Sudoku</string>
@@ -14,7 +13,7 @@
     <string name="store">Laden</string>
     <string name="gallery_header">Sudokus</string>
     <string name="win_text">Du hast es geschafft!</string>
-    <string name="back">zurück</string>
+    <string name="back">Zurück</string>
     <string name="create_Sudoku">Sudoku erstellen</string>
     <string name="generated">auto-generiert</string>
     <string name="create_header">Mein Sudoku</string>
@@ -29,5 +28,5 @@
     <string name="selectBoxSize_text">Boxgröße:</string>
     <string name="selectDifficulty_text">Schwierigkeitsgrad:</string>
     <string name="winscreen_time_text">"Zeit: "</string>
-    <string name="winscreen_mistakes_text">"gemachte Fehler: "</string>
+    <string name="winscreen_mistakes_text">"Gemachte Fehler: "</string>
 </resources>
