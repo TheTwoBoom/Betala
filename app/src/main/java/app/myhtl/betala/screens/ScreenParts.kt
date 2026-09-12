@@ -58,7 +58,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -353,7 +352,7 @@ fun AboutDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "BETALA",
+                    text = "beTALA",
                     modifier = Modifier.padding(8.dp),
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 48.sp,
