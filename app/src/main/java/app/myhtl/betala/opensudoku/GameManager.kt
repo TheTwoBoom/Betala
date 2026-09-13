@@ -10,6 +10,9 @@ import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import kotlin.math.sqrt
 
 
@@ -23,11 +26,13 @@ object GameManager {
         val size: Int = sqrt(data.size.toDouble()).toInt(),
         val boxWidth: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
         val boxHeight: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
-        val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {BooleanArray(sqrt(data.size.toDouble()).toInt())},
+        val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {
+            BooleanArray(
+                sqrt(data.size.toDouble()).toInt()
+            )
+        },
         var isFullyCorrect: Boolean = false,
-        //TODO() make a subclass, which contains name, difficulty, variant, instead of in the Viewmodel. Then change it in the SudokuScreen
-        val name: String = "?",
-        ) {
+    ) {
         val originalList = data.toList()
 
 
@@ -38,24 +43,24 @@ object GameManager {
 //            updateAttributes()
 //        }
 
-        fun changeValues(indices: Set<Int>, value: Int): Boolean{
+        fun changeValues(indices: Set<Int>, value: Int): Boolean {
             var counter = 0
             indices.forEach { index ->
-                if(originalList[index] == 0 && data[index] != value) {
+                if (originalList[index] == 0 && data[index] != value) {
                     data[index] = value
 
                     if (value != 0) clearNotes(index)
                 } else counter++
             }
-            if(counter == indices.size) return false
+            if (counter == indices.size) return false
 
             updateAttributes()
             return true
         }
 
-        fun updateAttributes(){
-            val isFullyFilled = data.count{ it != 0} == size*size
-            isFullyCorrect = if(isFullyFilled){
+        fun updateAttributes() {
+            val isFullyFilled = data.count { it != 0 } == size * size
+            isFullyCorrect = if (isFullyFilled) {
                 checkCorrect().all { it == 0 }
             } else false
         }
@@ -68,32 +73,33 @@ object GameManager {
 //
 //        }
 
-        fun toggleNotes(indices: Set<Int>, value: Int): Boolean{
-            if(value !in 1 .. size) return false
+        fun toggleNotes(indices: Set<Int>, value: Int): Boolean {
+            if (value !in 1..size) return false
             var counter = 0
             indices.forEach { index ->
                 if (data[index] == 0) {
                     val noteArray = noteData[index]
                     noteArray[value - 1] = !noteData[index][value - 1]
                     noteData[index] = noteArray.copyOf()
-                }   else{
+                } else {
                     counter++
                 }
             }
             return counter != indices.size
         }
+
         fun clearNotes(index: Int) {
-            if(this.originalList[index] == 0) {
+            if (this.originalList[index] == 0) {
                 noteData[index] = BooleanArray(size) { false }
             }
         }
 
-        fun clearNotes(indices: Set<Int>): Boolean{
+        fun clearNotes(indices: Set<Int>): Boolean {
             var counter = 0
             indices.forEach { index ->
-                if(this.originalList[index] == 0 && noteData[index].any{ it }) {
+                if (this.originalList[index] == 0 && noteData[index].any { it }) {
                     noteData[index] = BooleanArray(size) { false }
-                } else{
+                } else {
                     counter++
                 }
             }
@@ -107,12 +113,12 @@ object GameManager {
 //            }
 //        }
 
-        fun clearDataAt(indices: Set<Int>): Boolean{
+        fun clearDataAt(indices: Set<Int>): Boolean {
             var counter = 0
             indices.forEach { index ->
-                if(originalList[index] == 0 && data[index] != 0){
+                if (originalList[index] == 0 && data[index] != 0) {
                     data[index] = 0
-                } else{
+                } else {
                     counter++
                 }
             }
@@ -140,13 +146,13 @@ object GameManager {
 
             // 1. Check Rows
             for (row in 0 until s) {
-                val rowIndices = (0 until s).map { col -> row*size + col }
+                val rowIndices = (0 until s).map { col -> row * size + col }
                 markDuplicates(rowIndices)
             }
 
             // 2. Check Columns
             for (col in 0 until s) {
-                val colIndices = (0 until s).map { row -> row*size + col }
+                val colIndices = (0 until s).map { row -> row * size + col }
                 markDuplicates(colIndices)
             }
 
@@ -161,7 +167,7 @@ object GameManager {
                         for (x in 0 until boxWidth) {
                             val globalX = bx * boxWidth + x
                             val globalY = by * boxHeight + y
-                            boxIndices.add(globalY*size + globalX)
+                            boxIndices.add(globalY * size + globalX)
                         }
                     }
                     markDuplicates(boxIndices)
@@ -178,6 +184,7 @@ object GameManager {
 
             return data == other.data
         }
+
         override fun hashCode(): Int {
             return data.hashCode()
         }
@@ -185,12 +192,16 @@ object GameManager {
 
     data class OpenSudoku(
         val name: String,
-        val author: String,
-        val level: String,
-        val created: String,
-        val source: String,
-        val sourceURL: String,
-        val games: List<SudokuGame>
+        val author: String = "Betala",
+        val level: Difficulty,
+        val created: String = LocalDate.now().toString() + " " + LocalTime.now().truncatedTo(
+            ChronoUnit.MINUTES
+        ).toString(),
+        val source: String = "Betala",
+        val sourceURL: String = "https://app.betala.eu",
+        val games: List<SudokuGame>,
+        val variant: Variant,
+        var lifeCount: Int = 3
     )
 
     suspend fun parseSudokuFile(xmlString: String): OpenSudoku? {
@@ -202,10 +213,11 @@ object GameManager {
         parser.nextTag()
         var name = ""
         var author = ""
-        var level = ""
         var created = ""
         var source = ""
         var sourceURL = ""
+        var level = Difficulty.Medium
+        var variant = Variant.Classic
         val games = mutableListOf<SudokuGame>()
 
         while (parser.next() != XmlPullParser.END_DOCUMENT) {
@@ -214,10 +226,19 @@ object GameManager {
                     when (parser.name) {
                         "name" -> name = parser.nextText()
                         "author" -> author = parser.nextText()
-                        "level" -> level = parser.nextText()
+                        "level" -> try {
+                            level = Difficulty.valueOf(parser.nextText())
+                        } catch (_: Exception) {
+                        }
+
                         "created" -> created = parser.nextText()
                         "source" -> source = parser.nextText()
                         "sourceURL" -> sourceURL = parser.nextText()
+                        "variant" -> try {
+                            variant = Variant.valueOf(parser.nextText())
+                        } catch (_: Exception) {
+                        }
+
                         "game" -> {
                             val encodedGame =
                                 parser.getAttributeValue(null, "data")
@@ -240,13 +261,17 @@ object GameManager {
                                     val gameList = mutableStateListOf<Int>().apply {
                                         addAll(parsedValues)
                                     }
-                                    SudokuGame(gameList, ImageBitmap(1, 1), name = name)
+                                    SudokuGame(gameList, ImageBitmap(1, 1))
                                 }
 
                                 games.add(game)
                                 Log.d("GameManager", "Sudoku added")
                             } catch (exception: Exception) {
-                                Log.e("GameManager", "Sudoku konnte nicht geladen werden", exception)
+                                Log.e(
+                                    "GameManager",
+                                    "Sudoku konnte nicht geladen werden",
+                                    exception
+                                )
                                 return null
                             }
                         }
@@ -254,6 +279,43 @@ object GameManager {
                 }
             }
         }
-        return OpenSudoku(name, author, level, created, source, sourceURL, games)
+        return OpenSudoku(name, author, level, created, source, sourceURL, games, variant)
+    }
+
+    suspend fun serializeSudokuFile(openSudoku: OpenSudoku): String {
+        val serializer = Xml.newSerializer()
+        val stringWriter = java.io.StringWriter()
+        serializer.setOutput(stringWriter)
+
+        serializer.startDocument("UTF-8", true)
+        serializer.startTag(null, "opensudoku")
+
+        listOf("name", "author", "level", "created", "source", "sourceURL").forEach { tag ->
+            val value = when (tag) {
+                "name" -> openSudoku.name
+                "author" -> openSudoku.author
+                "variant" -> openSudoku.variant.name
+                "level" -> openSudoku.level.name
+                "created" -> openSudoku.created
+                "source" -> openSudoku.source
+                "sourceURL" -> openSudoku.sourceURL
+                else -> ""
+            }
+            serializer.startTag(null, tag)
+            serializer.text(value)
+            serializer.endTag(null, tag)
+        }
+
+        for (game in openSudoku.games) {
+            serializer.startTag(null, "game")
+            val dataString = game.data.joinToString("") { it.toString() }
+            serializer.attribute(null, "data", dataString)
+            serializer.endTag(null, "game")
+        }
+
+        serializer.endTag(null, "opensudoku")
+        serializer.endDocument()
+
+        TODO("Boilerplate code which is not ready to use")
     }
 }

@@ -65,7 +65,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily.Companion.Monospace
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -77,6 +76,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.SudokuViewModel
+import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.opensudoku.SudokuSolver
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -146,7 +146,8 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         navController.popBackStack()
     }
 
-    val sudokuGame = sudokuViewModel.currentGame ?: return
+    val openSudoku: GameManager.OpenSudoku = sudokuViewModel.opnSudoku ?: return
+    val sudokuGame = openSudoku.games[0]
     val rowCount = sudokuGame.size
     val columnCount = sudokuGame.size
     val cells = sudokuGame.data
@@ -167,7 +168,7 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         getNumbers = sudokuGame.size,
         getBoxWidth = sudokuGame.boxWidth,
         getBoxHeight = sudokuGame.boxHeight,
-        lives = sudokuViewModel.lifeCount,
+        lives = openSudoku.lifeCount,
         getFinishedNumbers = { sudokuViewModel.finishedNumbers() },
         undoMove = { sudokuViewModel.undoMove() },
         canUndo = { sudokuViewModel.canUndo() },
@@ -200,7 +201,7 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
 
             TopRow(
                 navController,
-                sudokuGame.name,
+                openSudoku.name,
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(horizontal = 5.dp),
@@ -221,10 +222,10 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
 
                 ) {
                     SecondTopRow(
-                        lives = sudokuViewModel.lifeCount,
-                        difficulty = sudokuViewModel.difficulty.label,
+                        lives = openSudoku.lifeCount,
+                        difficulty = openSudoku.level.label,
                         sudokuSize = sudokuGame.size,
-                        sudokuVariant = sudokuViewModel.variant.icon
+                        sudokuVariant = openSudoku.variant.icon
                     )
                     Spacer(Modifier.size(5.dp))
                     if (timerActions.timerIsRunning) {
@@ -340,17 +341,17 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
             ) {
                 TopRow(
                     navController = navController,
-                    name = sudokuGame.name,
+                    name = openSudoku.name,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(horizontal = 5.dp),
                     timerActions = timerActions
                 )
                 SecondTopRow(
-                    lives = sudokuViewModel.lifeCount,
-                    difficulty = sudokuViewModel.difficulty.label,
+                    lives = openSudoku.lifeCount,
+                    difficulty = openSudoku.level.label,
                     sudokuSize = sudokuGame.size,
-                    sudokuVariant = sudokuViewModel.variant.icon
+                    sudokuVariant = openSudoku.variant.icon
                 )
 
                 Timer(timer = time, timerActions = timerActions)

@@ -36,12 +36,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.BufferedReader
 import app.myhtl.betala.screens.SudokuCanvas
-import app.myhtl.betala.utils.captureComposable
-import app.myhtl.betala.utils.useVirtualDisplay
 import kotlin.collections.isNotEmpty
 import kotlin.collections.orEmpty
 import java.io.FileOutputStream
-import kotlin.math.sqrt
 
 
 object GalleryManager {
@@ -91,7 +88,7 @@ object GalleryManager {
         isLoading = false
     }
 
-    fun getAllSudokus(context: Context): List<GameManager.OpenSudoku> {
+    fun getAllSudokus(): List<GameManager.OpenSudoku> {
         return allSudokus
     }
 
@@ -99,7 +96,7 @@ object GalleryManager {
         context: Context,
         filters: List<FilterOption>
     ): List<GameManager.OpenSudoku> {
-        var list: List<GameManager.OpenSudoku> = getAllSudokus(context)
+        var list: List<GameManager.OpenSudoku> = getAllSudokus()
         val fFilter = filters.firstOrNull { it.id == "favorite"}
         val lFilter = filters.firstOrNull { it.id == "level" }
         val aFilter = filters.firstOrNull { it.id == "author" }
@@ -129,7 +126,7 @@ object GalleryManager {
             .toSet()
 
         return if (selectedLevels.isNotEmpty()) {
-            list.filter { sudoku -> sudoku.level in selectedLevels }
+            list.filter { sudoku -> sudoku.level.name in selectedLevels }
         } else list
     }
     fun filterAuthor(filter: FilterOption, list: List<GameManager.OpenSudoku>): List<GameManager.OpenSudoku> {
