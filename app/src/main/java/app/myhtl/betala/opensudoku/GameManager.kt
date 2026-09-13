@@ -35,7 +35,6 @@ object GameManager {
     ) {
         val originalList = data.toList()
 
-
 //        fun changeValue(index: Int, value: Int) {
 //            if(originalList[index] != 0) return
 //            data[index] = value

@@ -32,6 +32,7 @@
     <string name="selectDifficulty_text">Difficulty:</string>
     <string name="winscreen_time_text">Time:</string>
     <string name="winscreen_mistakes_text">Mistakes made:</string>
+    <string name="save">Save</string>
 
 
 </resources>

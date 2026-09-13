@@ -29,4 +29,5 @@
     <string name="selectDifficulty_text">Schwierigkeitsgrad:</string>
     <string name="winscreen_time_text">"Zeit: "</string>
     <string name="winscreen_mistakes_text">"Gemachte Fehler: "</string>
+    <string name="save">Speichern</string>
 </resources>

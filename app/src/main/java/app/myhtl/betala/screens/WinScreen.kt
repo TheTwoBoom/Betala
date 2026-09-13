@@ -53,6 +53,12 @@ fun WinScreen(navController: NavController, sudokuViewModel: SudokuViewModel) {
             }) {
             Text(stringResource(R.string.back))
         }
+        Button(
+            onClick = {
+                TODO("Implement saving sudokus")
+            }) {
+            Text(stringResource(R.string.save))
+        }
 
     }
 }
