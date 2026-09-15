@@ -16,9 +16,24 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.sqrt
 
 
-object GameManager {
-    class SudokuGame(
+class Sudoku {
+    data class SudokuMetadata(
+        val name: String,
+        val author: String = "Betala",
+        val level: Difficulty,
+        val created: String = LocalDate.now().toString() + " " + LocalTime.now().truncatedTo(
+            ChronoUnit.MINUTES
+        ).toString(),
+        val source: String = "Betala",
+        val sourceURL: String = "https://app.betala.eu",
+        val games: List<SudokuGame>,
+        val variant: Variant,
+        var lifeCount: Int = 3
+    )
+
+    data class SudokuGame(
         val data: SnapshotStateList<Int>,
+        val solution: List<IntArray>,
         var preview: ImageBitmap = ImageBitmap(
             width = 1,
             height = 1
@@ -188,133 +203,119 @@ object GameManager {
             return data.hashCode()
         }
     }
+}
 
-    data class OpenSudoku(
-        val name: String,
-        val author: String = "Betala",
-        val level: Difficulty,
-        val created: String = LocalDate.now().toString() + " " + LocalTime.now().truncatedTo(
-            ChronoUnit.MINUTES
-        ).toString(),
-        val source: String = "Betala",
-        val sourceURL: String = "https://app.betala.eu",
-        val games: List<SudokuGame>,
-        val variant: Variant,
-        var lifeCount: Int = 3
-    )
+suspend fun parseSudokuFile(xmlString: String): OpenSudoku? {
+    val parser: XmlPullParser = Xml.newPullParser()
+    val inputStream: InputStream = ByteArrayInputStream(xmlString.toByteArray())
 
-    suspend fun parseSudokuFile(xmlString: String): OpenSudoku? {
-        val parser: XmlPullParser = Xml.newPullParser()
-        val inputStream: InputStream = ByteArrayInputStream(xmlString.toByteArray())
+    parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+    parser.setInput(inputStream, null)
+    parser.nextTag()
+    var name = ""
+    var author = ""
+    var created = ""
+    var source = ""
+    var sourceURL = ""
+    var level = Difficulty.Medium
+    var variant = Variant.Classic
+    val games = mutableListOf<SudokuGame>()
 
-        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
-        parser.setInput(inputStream, null)
-        parser.nextTag()
-        var name = ""
-        var author = ""
-        var created = ""
-        var source = ""
-        var sourceURL = ""
-        var level = Difficulty.Medium
-        var variant = Variant.Classic
-        val games = mutableListOf<SudokuGame>()
+    while (parser.next() != XmlPullParser.END_DOCUMENT) {
+        when (parser.eventType) {
+            XmlPullParser.START_TAG -> {
+                when (parser.name) {
+                    "name" -> name = parser.nextText()
+                    "author" -> author = parser.nextText()
+                    "level" -> try {
+                        level = Difficulty.valueOf(parser.nextText())
+                    } catch (_: Exception) {
+                    }
 
-        while (parser.next() != XmlPullParser.END_DOCUMENT) {
-            when (parser.eventType) {
-                XmlPullParser.START_TAG -> {
-                    when (parser.name) {
-                        "name" -> name = parser.nextText()
-                        "author" -> author = parser.nextText()
-                        "level" -> try {
-                            level = Difficulty.valueOf(parser.nextText())
-                        } catch (_: Exception) {
-                        }
+                    "created" -> created = parser.nextText()
+                    "source" -> source = parser.nextText()
+                    "sourceURL" -> sourceURL = parser.nextText()
+                    "variant" -> try {
+                        variant = Variant.valueOf(parser.nextText())
+                    } catch (_: Exception) {
+                    }
 
-                        "created" -> created = parser.nextText()
-                        "source" -> source = parser.nextText()
-                        "sourceURL" -> sourceURL = parser.nextText()
-                        "variant" -> try {
-                            variant = Variant.valueOf(parser.nextText())
-                        } catch (_: Exception) {
-                        }
+                    "game" -> {
+                        val encodedGame =
+                            parser.getAttributeValue(null, "data")
 
-                        "game" -> {
-                            val encodedGame =
-                                parser.getAttributeValue(null, "data")
-
-                            try {
-                                requireNotNull(encodedGame) {
-                                    "Das Attribut 'data' fehlt."
-                                }
-                                require(encodedGame.length == 81) {
-                                    "Erwartet wurden 81 Zeichen, erhalten: ${encodedGame.length}"
-                                }
-                                require(encodedGame.all { it in '0'..'9' }) {
-                                    "Das Sudoku enthält ungültige Zeichen."
-                                }
-
-                                val parsedValues = encodedGame.map { character ->
-                                    character.digitToInt()
-                                }
-                                val game = withContext(Dispatchers.Main.immediate) {
-                                    val gameList = mutableStateListOf<Int>().apply {
-                                        addAll(parsedValues)
-                                    }
-                                    SudokuGame(gameList, ImageBitmap(1, 1))
-                                }
-
-                                games.add(game)
-                                Log.d("GameManager", "Sudoku added")
-                            } catch (exception: Exception) {
-                                Log.e(
-                                    "GameManager",
-                                    "Sudoku konnte nicht geladen werden",
-                                    exception
-                                )
-                                return null
+                        try {
+                            requireNotNull(encodedGame) {
+                                "Das Attribut 'data' fehlt."
                             }
+                            require(encodedGame.length == 81) {
+                                "Erwartet wurden 81 Zeichen, erhalten: ${encodedGame.length}"
+                            }
+                            require(encodedGame.all { it in '0'..'9' }) {
+                                "Das Sudoku enthält ungültige Zeichen."
+                            }
+
+                            val parsedValues = encodedGame.map { character ->
+                                character.digitToInt()
+                            }
+                            val game = withContext(Dispatchers.Main.immediate) {
+                                val gameList = mutableStateListOf<Int>().apply {
+                                    addAll(parsedValues)
+                                }
+                                SudokuGame(gameList, ImageBitmap(1, 1))
+                            }
+
+                            games.add(game)
+                            Log.d("GameManager", "Sudoku added")
+                        } catch (exception: Exception) {
+                            Log.e(
+                                "GameManager",
+                                "Sudoku konnte nicht geladen werden",
+                                exception
+                            )
+                            return null
                         }
                     }
                 }
             }
         }
-        return OpenSudoku(name, author, level, created, source, sourceURL, games, variant)
+    }
+    return OpenSudoku(name, author, level, created, source, sourceURL, games, variant)
+}
+
+suspend fun serializeSudokuFile(openSudoku: OpenSudoku): String {
+    val serializer = Xml.newSerializer()
+    val stringWriter = java.io.StringWriter()
+    serializer.setOutput(stringWriter)
+
+    serializer.startDocument("UTF-8", true)
+    serializer.startTag(null, "opensudoku")
+
+    listOf("name", "author", "level", "created", "source", "sourceURL").forEach { tag ->
+        val value = when (tag) {
+            "name" -> openSudoku.name
+            "author" -> openSudoku.author
+            "variant" -> openSudoku.variant.name
+            "level" -> openSudoku.level.name
+            "created" -> openSudoku.created
+            "source" -> openSudoku.source
+            "sourceURL" -> openSudoku.sourceURL
+            else -> ""
+        }
+        serializer.startTag(null, tag)
+        serializer.text(value)
+        serializer.endTag(null, tag)
     }
 
-    suspend fun serializeSudokuFile(openSudoku: OpenSudoku): String {
-        val serializer = Xml.newSerializer()
-        val stringWriter = java.io.StringWriter()
-        serializer.setOutput(stringWriter)
-
-        serializer.startDocument("UTF-8", true)
-        serializer.startTag(null, "opensudoku")
-
-        listOf("name", "author", "level", "created", "source", "sourceURL").forEach { tag ->
-            val value = when (tag) {
-                "name" -> openSudoku.name
-                "author" -> openSudoku.author
-                "variant" -> openSudoku.variant.name
-                "level" -> openSudoku.level.name
-                "created" -> openSudoku.created
-                "source" -> openSudoku.source
-                "sourceURL" -> openSudoku.sourceURL
-                else -> ""
-            }
-            serializer.startTag(null, tag)
-            serializer.text(value)
-            serializer.endTag(null, tag)
-        }
-
-        for (game in openSudoku.games) {
-            serializer.startTag(null, "game")
-            val dataString = game.data.joinToString("") { it.toString() }
-            serializer.attribute(null, "data", dataString)
-            serializer.endTag(null, "game")
-        }
-
-        serializer.endTag(null, "opensudoku")
-        serializer.endDocument()
-
-        TODO("Boilerplate code which is not ready to use")
+    for (game in openSudoku.games) {
+        serializer.startTag(null, "game")
+        val dataString = game.data.joinToString("") { it.toString() }
+        serializer.attribute(null, "data", dataString)
+        serializer.endTag(null, "game")
     }
+
+    serializer.endTag(null, "opensudoku")
+    serializer.endDocument()
+
+    TODO("Boilerplate code which is not ready to use")
 }
