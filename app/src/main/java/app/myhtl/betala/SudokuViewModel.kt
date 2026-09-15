@@ -7,7 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import app.myhtl.betala.SudokuVarients.ClassicSudokuRule
+import app.myhtl.betala.SudokuVarients.KnightsMoveRule
+import app.myhtl.betala.SudokuVarients.NonConsecutiveRule
+import app.myhtl.betala.opensudoku.Difficulty
 import app.myhtl.betala.opensudoku.GameManager
+import app.myhtl.betala.opensudoku.SudokuGeneratorV2
+import app.myhtl.betala.opensudoku.Variant
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +58,8 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         get() = SettingUtils(context).getBool("notemode") == true
 
 
+    var isGenerating by mutableStateOf(false)
+
     //timer
     private val _seconds = MutableStateFlow(0)
     val seconds = _seconds.asStateFlow()
@@ -64,7 +72,52 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     private var msAfterPaused = 0L
     private var msAfterLastStart = 0L
 
-    fun startNewGame(openSudoku: GameManager.OpenSudoku) {
+
+    fun generateAndStartNewGame(numbers: Int, boxWith: Int, boxHeight: Int, difficulty: Difficulty, sudokuName: String){
+        moveHistory.clear()
+        moveFuture.clear()
+        updateUndoRedoFlags()
+        // for safety leave old game
+        leaveGame()
+        pauseOrResumeTimer()
+
+        viewModelScope.launch {
+            isGenerating = true
+
+            val generator = SudokuGeneratorV2(
+                numbers = numbers,
+                ruleSet = listOf(ClassicSudokuRule(
+                    numbers = numbers,
+                    boxWidth = boxWith,
+                    boxHeight = boxHeight
+                )),
+                difficulty = difficulty
+            )
+
+            //test:
+            //generator.testSudokuGeneratorTime(1000)
+
+            val game = GameManager.SudokuGame(
+                data = generator.getNewSudoku(),
+                name = sudokuName,
+                boxWidth = boxWith,
+                boxHeight = boxHeight
+            )
+
+            currentGame = game
+            gameSize = game.size
+            errorArray = BooleanArray(game.size*game.size){false}
+            selectedIndex = game.size*game.size/2
+            selectedIndices = emptySet()
+            isNoteMode = false
+            isFinishedAndCorrect = false
+            lifeCount = 3
+
+            isGenerating = false
+        }
+    }
+
+    fun startNewGame(openSudoku: GameManager.OpenSudoku){
         moveHistory.clear()
         moveFuture.clear()
         updateUndoRedoFlags()
@@ -128,8 +181,8 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         if (!isNoteMode && selectedIndices.isEmpty()) {
             valueChanged = game.changeValues(indices, number)
 
-            validateSudoku(indices)
-        } else if (!isNoteModeDisabled) {
+            if (valueChanged) validateSudoku(indices)
+        } else if(!isNoteModeDisabled) {
             valueChanged = game.toggleNotes(indices, number)
         }
 
