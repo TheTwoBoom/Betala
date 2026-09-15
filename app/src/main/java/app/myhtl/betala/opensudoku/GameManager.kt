@@ -16,11 +16,11 @@ import kotlin.time.Duration.Companion.seconds
 
 
 class Sudoku(
-    val metadata: Metadata,
+    val metadata: MetaData,
     val game: Game,
     val userData: UserData = UserData(),
 ) {
-    data class Metadata(
+    data class MetaData(
         val name: String,
         val author: String = "Betala",
         val level: Difficulty,
@@ -32,7 +32,7 @@ class Sudoku(
     data class UserData(
         var lifeCount: Int = 3,
         var timer: Duration = 0.seconds
-        )
+    )
 
     data class Game(
         val data: SnapshotStateList<Int>,
@@ -300,7 +300,18 @@ class Sudoku(
                     }
                 }
             }
-            return TODO("WIP")
+            return Sudoku(
+                MetaData(
+                    name = TODO(),
+                    level = TODO(),
+                    created = TODO()
+                ),
+                Game(
+                    data = TODO(),
+                    solution = TODO(),
+                    variant = TODO()
+                )
+            )
         }
     }
 }
