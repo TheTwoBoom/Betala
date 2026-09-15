@@ -209,6 +209,17 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         return
     }
 
+    //TODO() doesn't work
+    if(isGenerating){
+        Column(
+            Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) { LoadingIndicator() }
+        return
+    }
+
         if (CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT) {
             Column(
                 Modifier
