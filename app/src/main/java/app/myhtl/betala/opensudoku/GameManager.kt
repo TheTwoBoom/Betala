@@ -5,23 +5,20 @@ import android.util.Xml
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.ImageBitmap
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.StringWriter
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.temporal.ChronoUnit
-import java.util.IllegalFormatException
 import kotlin.math.sqrt
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 
 class Sudoku(
     val metadata: Metadata,
     val game: Game,
+    val userData: UserData = UserData(),
 ) {
     data class Metadata(
         val name: String,
@@ -30,8 +27,12 @@ class Sudoku(
         val created: LocalDateTime,
         val source: String = "Betala",
         val sourceURL: String = "https://app.betala.eu",
-        var lifeCount: Int = 3
     )
+
+    data class UserData(
+        var lifeCount: Int = 3,
+        var timer: Duration = 0.seconds
+        )
 
     data class Game(
         val data: SnapshotStateList<Int>,
@@ -40,13 +41,13 @@ class Sudoku(
         val size: Int = sqrt(data.size.toDouble()).toInt(),
         val boxWidth: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
         val boxHeight: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
-        val variant: Variant,
+        val variant: Set<Variant>,
         val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {
             BooleanArray(
                 sqrt(data.size.toDouble()).toInt()
             )
         },
-        var isFullyCorrect: Boolean = false,
+        var isFullyCorrect: Boolean = false
     ) {
         val originalList = data.toList()
 
@@ -216,7 +217,7 @@ class Sudoku(
             val value = when (tag) {
                 "name" -> metadata.name
                 "author" -> metadata.author
-                "variant" -> game.variant.name
+                "variant" -> game.variant.joinToString()
                 "level" -> metadata.level.name
                 "created" -> metadata.created.toString()
                 "source" -> metadata.source
@@ -235,8 +236,7 @@ class Sudoku(
 
         serializer.endTag(null, "opensudoku")
         serializer.endDocument()
-
-        TODO("Boilerplate code which is not ready to use")
+        return TODO("WIP")
     }
 
     companion object {
@@ -300,11 +300,7 @@ class Sudoku(
                     }
                 }
             }
-            val game: Game = Game(
-                data = TODO(),
-                solution = TODO(),
-                variant = TODO(),
-            )
+            return TODO("WIP")
         }
     }
 }
