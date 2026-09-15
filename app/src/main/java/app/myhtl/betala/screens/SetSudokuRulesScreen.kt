@@ -45,7 +45,6 @@ import app.myhtl.betala.SudokuMode
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.Difficulty
 import app.myhtl.betala.opensudoku.GameManager
-import app.myhtl.betala.opensudoku.SudokuGenerator
 import app.myhtl.betala.opensudoku.Variant
 import com.google.common.math.IntMath.sqrt
 import java.math.RoundingMode
@@ -205,54 +204,49 @@ fun SetSudokuRulesScreen(
                                     boxWidth = selectedBoxWidth,
                                     boxHeight = selectedBoxHeight
                                 )
-                            )
-                        )
-                        sudokuViewModel.startNewGame(sudoku)
-                        navController.navigate(AppAdditionalDestinations.SUDOKU.route)
-                    }) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                            sudokuViewModel.startNewGame(sudoku)
+                            navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                        }
                     ) {
-                        Text(stringResource(R.string.start_game))
-                        Icon(
-                            painterResource(R.drawable.play_arrow), contentDescription = "Play"
-                        )
-                    }
-                }
-            } else if (sudokuViewModel.sudokuMode == SudokuMode.GENERATOR) {
-                Button(
-                    onClick = {
-                        val generator = SudokuGenerator(
-                            numbers = numbers,
-                            boxWidth = selectedBoxWidth,
-                            boxHeight = selectedBoxHeight,
-                            difficulty = selectedDifficulty
-                        )
-                        val sudoku = GameManager.OpenSudoku(
-                            name = nameState.text.toString(),
-                            level = selectedDifficulty,
-                            variant = selectedVariant.variant,
-                            games = mutableListOf(
-                                GameManager.SudokuGame(
-                                    data = generator.getRandomSudoku(),
-                                    boxWidth = selectedBoxWidth,
-                                    boxHeight = selectedBoxHeight
-                                )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(stringResource(R.string.start_game))
+                            Icon(
+                                painterResource(R.drawable.play_arrow),
+                                contentDescription = "Play"
                             )
-                        )
-                        sudokuViewModel.startNewGame(sudoku)
-                        navController.navigate(AppAdditionalDestinations.SUDOKU.route)
-                    }) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(stringResource(R.string.start_game))
-                        Icon(
-                            painterResource(R.drawable.play_arrow), contentDescription = "Play"
-                        )
+                        }
                     }
+                } else {
+                    val creationText = stringResource(R.string.generated)
+                    Button(
+                        onClick = {
+                            sudokuViewModel.variant = selectedVariant.variant
+                            sudokuViewModel.difficulty = selectedDifficulty
+
+                            navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                            sudokuViewModel.generateAndStartNewGame(
+                                numbers = numbers,
+                                boxWith = selectedBoxWidth,
+                                boxHeight = selectedBoxHeight,
+                                difficulty = selectedDifficulty,
+                                sudokuName = creationText
+                            )
+                            navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                        }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(stringResource(R.string.start_game))
+                            Icon(
+                                painterResource(R.drawable.play_arrow),
+                                contentDescription = "Play"
+                            )
+                        }
 
                 }
             }
