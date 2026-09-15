@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -21,7 +20,6 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,7 +41,6 @@ import app.myhtl.betala.SudokuMode
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.Difficulty
 import app.myhtl.betala.opensudoku.GameManager
-import app.myhtl.betala.opensudoku.SudokuGenerator
 import app.myhtl.betala.opensudoku.Variant
 import com.google.common.math.IntMath.sqrt
 import java.math.RoundingMode
@@ -82,6 +79,8 @@ fun SetSudokuRulesScreen(
                     alignment = Alignment.CenterVertically
                 )
             ) {
+
+
 
 
                 val variantItems = remember {
@@ -228,20 +227,15 @@ fun SetSudokuRulesScreen(
                         onClick = {
                             sudokuViewModel.variant = selectedVariant.variant
                             sudokuViewModel.difficulty = selectedDifficulty
-                            val generator = SudokuGenerator(
+
+                            navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+                            sudokuViewModel.generateAndStartNewGame(
                                 numbers = numbers,
-                                boxWidth = selectedBoxWidth,
+                                boxWith = selectedBoxWidth,
                                 boxHeight = selectedBoxHeight,
-                                difficulty = selectedDifficulty
+                                difficulty = selectedDifficulty,
+                                sudokuName = creationText
                             )
-                            // would else be empty
-                            val sudoku = GameManager.SudokuGame(
-                                data = generator.getRandomSudoku(),
-                                name = creationText,
-                                boxWidth = selectedBoxWidth,
-                                boxHeight = selectedBoxHeight
-                            )
-                            sudokuViewModel.startNewGame(sudoku)
                             navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                         }
                     ) {

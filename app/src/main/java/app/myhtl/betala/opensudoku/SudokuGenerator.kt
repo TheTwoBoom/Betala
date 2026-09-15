@@ -2,20 +2,22 @@ package app.myhtl.betala.opensudoku
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import app.myhtl.betala.SudokuVarients.SudokuRule
 import kotlin.math.floor
 import kotlin.math.sqrt
 
 class SudokuGenerator (
     private var numbers: Int,
-    val boxWidth: Int = sqrt(numbers.toDouble()).toInt(),
-    val boxHeight: Int = sqrt(numbers.toDouble()).toInt(),
-    private var erg: Array<IntArray> = Array(numbers){ IntArray(numbers) },
+    private val boxWidth: Int = sqrt(numbers.toDouble()).toInt(),
+    private val boxHeight: Int = sqrt(numbers.toDouble()).toInt(),
+    private var data: Array<IntArray> = Array(numbers){ IntArray(numbers) },
+    private val ruleSet: List<SudokuRule>,
     private var notes: Array<Array<BooleanArray>> = Array(numbers) { Array(numbers){BooleanArray(numbers) {true} } },
     private val difficulty: Difficulty
     ){
 
     private fun reset() {
-        erg = Array(numbers) { IntArray(numbers) }
+        data = Array(numbers) { IntArray(numbers) }
         notes = Array(numbers) { Array(numbers) { BooleanArray(numbers) { true } } }
     }
     fun getRandomSudoku(): SnapshotStateList<Int>{
@@ -30,7 +32,7 @@ class SudokuGenerator (
 
         val sudokuList: SnapshotStateList<Int> = mutableStateListOf()
         for(i in 0 until numbers*numbers){
-            sudokuList.add(erg[i/numbers][i%numbers])
+            sudokuList.add(data[i/numbers][i%numbers])
         }
         return sudokuList
     }
@@ -43,7 +45,7 @@ class SudokuGenerator (
         for (i in 0 until numbers * numbers) {
             val row = i / numbers
             val col = i % numbers
-            if (erg[row][col] == 0) {
+            if (data[row][col] == 0) {
                 val notes = notes[row][col].count { it }
                 if (notes in 1 until fewestNotes) {
                     fewestNotes = notes
@@ -112,69 +114,92 @@ class SudokuGenerator (
                 return false
             }
 
-            if(erg[randomCell/numbers][randomCell%numbers] == 0){
                 // place the random number
-                erg[randomCell/numbers][randomCell%numbers] = randomNumber
+                data[randomCell/numbers][randomCell%numbers] = randomNumber
                 // no notes when a number is filled in
+                //if you want to delete this, add it in the removeNotes
                 notes[randomCell/numbers][randomCell%numbers] = BooleanArray(numbers) { false }
-            }
-            else{
-                println("Can't place number")
-            }
 
+//            for (rule in ruleSet){
+//                rule.removeNotesWithRule(notes, randomCell, randomNumber)
+//            }
             removeNotes(randomCell, randomNumber)
         }
-
-        //for(i in 0 until numbers){
-        //    for(j in 0 until numbers){
-        //        print(erg[i][j].toString()+" ")
-        //    }
-        //    println()
-        //}
         return true
     }
 
+    fun createSudokuRecursive(): Boolean{
+        val nextIndex = getRandomCell()
 
-    fun removeNotes(randomCell: Int, randomNumber: Int){
-        val cellRow = randomCell/numbers
-        val cellColumn = randomCell%numbers
+        if(nextIndex == -1) return true
+
+        val notes = getNotesFromCell(nextIndex).toList().shuffled()
+
+        for(note in notes){
+           data[nextIndex/numbers][nextIndex%numbers] = note
+
+            if(createSudokuRecursive()) return true
+
+            data[nextIndex/numbers][nextIndex%numbers] = 0
+            //TODO restore notes
+        }
+
+        return false
+    }
+
+    fun getNotesFromCell(index: Int): List<Int>{
+        val notes = notes[index/numbers][index%numbers]
+        val list = mutableListOf<Int>()
+        for(index in notes.indices){
+            if(notes[index]){
+                list.add(index + 1)
+            }
+        }
+        return list
+    }
+
+    fun removeNotes(index: Int, value: Int){
+        val cellRow = index /numbers
+        val cellColumn = index %numbers
 
         // in this loop, the notes are set based after the random number that has been added
         for(i in 0 until numbers){
-            notes[i][cellColumn][randomNumber -1] = false
-            notes[cellRow][i][randomNumber -1] = false
-            notes[(cellRow/boxHeight)*boxHeight+i/boxWidth][(cellColumn/boxWidth)*boxWidth+i%boxWidth][randomNumber -1] = false
+            notes[i][cellColumn][value -1] = false
+            notes[cellRow][i][value -1] = false
+            notes[(cellRow/boxHeight)*boxHeight+i/boxWidth][(cellColumn/boxWidth)*boxWidth+i%boxWidth][value -1] = false
         }
     }
 
     fun removeRandomNumbers(amount: Int){
         val solver = SudokuSolver(
             solveOnInit = false,
-            inputData = erg,
+            inputData = data,
             boxWidth = boxWidth,
-            boxHeight = boxHeight
+            boxHeight = boxHeight,
+            ruleSet = ruleSet
         )
         repeat(amount){
             val randomCell = getRandomFilledCell()
-            val rememberCell = erg[randomCell/numbers][randomCell%numbers]
-            erg[randomCell/numbers][randomCell%numbers] = 0
-            solver.setNewData(erg)
+            //if (randomCell == -1) return
+            val rememberCell = data[randomCell/numbers][randomCell%numbers]
+            data[randomCell/numbers][randomCell%numbers] = 0
+            solver.setNewData(data)
             solver.solve()
 
             // if it isn't solvable
             if(!solver.hasOnlyOneSolution()){
-                erg[randomCell/numbers][randomCell%numbers] = rememberCell
+                data[randomCell/numbers][randomCell%numbers] = rememberCell
                 //it tries different cells
                 for(i in 0 until numbers){
 
                     val randomCell = getRandomFilledCell()
-                    val rememberCell = erg[randomCell/numbers][randomCell%numbers]
-                    erg[randomCell/numbers][randomCell%numbers] = 0
-                    solver.setNewData(erg)
+                    val rememberCell = data[randomCell/numbers][randomCell%numbers]
+                    data[randomCell/numbers][randomCell%numbers] = 0
+                    solver.setNewData(data)
                     solver.solve()
 
                     if(!solver.hasOnlyOneSolution()){
-                        erg[randomCell/numbers][randomCell%numbers] = rememberCell
+                        data[randomCell/numbers][randomCell%numbers] = rememberCell
 
                     }
                     else{
@@ -197,7 +222,7 @@ class SudokuGenerator (
         var countFilled = 0
 
         for (i in 0 until numbers * numbers) {
-            if (erg[i / numbers][i % numbers] != 0) {
+            if (data[i / numbers][i % numbers] != 0) {
                 countFilled++
             }
         }
@@ -210,7 +235,7 @@ class SudokuGenerator (
 
         var counter = 0
         for (i in 0 until numbers * numbers) {
-            if (erg[i / numbers][i % numbers] != 0) {
+            if (data[i / numbers][i % numbers] != 0) {
                 if (counter == randomCellIndex) {
                     return i
                 }

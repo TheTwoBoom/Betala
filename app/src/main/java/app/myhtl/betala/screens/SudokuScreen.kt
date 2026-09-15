@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,26 +19,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.DisposableEffect
@@ -51,7 +47,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -79,6 +74,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.myhtl.betala.AppAdditionalDestinations
+import app.myhtl.betala.SudokuVarients.ClassicSudokuRule
+import app.myhtl.betala.SudokuVarients.KnightsMoveRule
+import app.myhtl.betala.SudokuVarients.NonConsecutiveRule
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.SudokuSolver
 import kotlin.math.floor
@@ -117,6 +115,7 @@ data class TimerActions(
 )
 
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel){
 
@@ -178,9 +177,13 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         canRedo = {sudokuViewModel.canRedo()}
     )
 
+    var swapedControls by remember { mutableStateOf(false) }
+
     //timer
     val totalSeconds by sudokuViewModel.seconds.collectAsStateWithLifecycle()
     val isRunning by sudokuViewModel.isRunning.collectAsStateWithLifecycle()
+
+    val isGenerating = sudokuViewModel.isGenerating
 
     val timerActions = TimerActions(
         onPauseTimer = { sudokuViewModel.pauseOrResumeTimer() },
@@ -188,11 +191,20 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         timerIsRunning = isRunning
     )
 
-
-
     val minutes = totalSeconds/60
     val seconds = totalSeconds%60
     val time = String.format("%02d:%02d", minutes,seconds)
+
+    //TODO() doesn't work
+    if(isGenerating){
+        Column(
+            Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) { LoadingIndicator() }
+        return
+    }
 
         if (CurrentDevice.windowSizeClass() == CurrentDevice.MOBILE_PORTRAIT) {
             Column(
@@ -202,7 +214,9 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
 
-                TopRow(navController, sudokuGame.name, modifier = Modifier.padding(top = 10.dp).padding(horizontal = 5.dp), timer = time, timerActions = timerActions)
+                TopRow(navController, sudokuGame.name, modifier = Modifier
+                    .padding(top = 10.dp)
+                    .padding(horizontal = 5.dp), timer = time, timerActions = timerActions)
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -210,7 +224,8 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
                 ) {
 
                     Column(
-                        Modifier.shadow(elevation = 2.dp)
+                        Modifier
+                            .shadow(elevation = 2.dp)
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(vertical = 15.dp)
 
@@ -273,7 +288,19 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
                                     newData[row][column] = sudokuGame.data[i]
                                 }
                                 //change to data
-                                val so = SudokuSolver(inputData = newData, solveOnInit = true, boxWidth = sudokuGame.boxWidth, boxHeight = sudokuGame.boxHeight)
+                                val so = SudokuSolver(inputData = newData,
+                                    solveOnInit = true,
+                                    boxWidth = sudokuGame.boxWidth,
+                                    boxHeight = sudokuGame.boxHeight,
+                                    ruleSet = listOf(
+                                        ClassicSudokuRule(
+                                            numbers = rowCount,
+                                            boxWidth = actions.getBoxWidth,
+                                            boxHeight = actions.getBoxHeight
+                                        ),
+                                        //KnightsMoveRule(numbers = rowCount)
+
+                                    ))
 
                                 val d = so.data
                                 for(i in 0 until sudokuGame.data.size){
@@ -316,11 +343,10 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
-                )
+                        .fillMaxSize())
                 {
 
+                    if(!swapedControls){
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.SpaceAround,
@@ -342,8 +368,17 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
                             sudokuSize = sudokuGame.size,
                             sudokuVariant = sudokuViewModel.variant.icon
                         )
-
-                        Timer(timer = time, timerActions = timerActions)
+                        Row() {
+                            Timer(timer = time, timerActions = timerActions)
+                            IconButton(
+                                onClick = { swapedControls = !swapedControls }
+                            ){
+                                Icon(
+                                    painter = painterResource(R.drawable.swap),
+                                    contentDescription = "swap controls"
+                                )
+                            }
+                        }
                         Spacer(Modifier.size(10.dp))
                         SudokuToolBar(actions)
                         NumRow(
@@ -354,38 +389,113 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
                         Spacer(Modifier.size(10.dp))
                         }
 
-                    Row(
-                        Modifier.shadow(elevation = 2.dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = 15.dp)
-                    ){
-                        if (timerActions.timerIsRunning) {
-                            SudokuCanvas(
-                                Modifier
-                                    .fillMaxHeight()
-                                    .padding(vertical = 10.dp)
-                                    .padding(end = 20.dp),
-                                cells = cells,
-                                cellNotes = cellNotes,
-                                actions = actions,
-                                selectedCell = sudokuViewModel.selectedIndex,
-                                selectedCells = sudokuViewModel.selectedIndices,
-                            )
+                        Row(
+                            Modifier
+                                .shadow(elevation = 2.dp)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(horizontal = 15.dp)
+                        ){
+                            if (timerActions.timerIsRunning) {
+                                SudokuCanvas(
+                                    Modifier
+                                        .fillMaxHeight()
+                                        .padding(vertical = 10.dp)
+                                        .padding(end = 20.dp),
+                                    cells = cells,
+                                    cellNotes = cellNotes,
+                                    actions = actions,
+                                    selectedCell = sudokuViewModel.selectedIndex,
+                                    selectedCells = sudokuViewModel.selectedIndices,
+                                )
+                            }
+                            else{
+                                EmptySudokuCanvas(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(vertical = 10.dp)
+                                        .padding(end = 20.dp),
+                                    actions = actions,
+                                    timerActions = timerActions
+                                )
+                            }
                         }
-                        else{
-                            EmptySudokuCanvas(
+                    } else{
+                        Row(
+                            Modifier
+                                .shadow(elevation = 2.dp)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(horizontal = 15.dp)
+                        ){
+                            if (timerActions.timerIsRunning) {
+                                SudokuCanvas(
+                                    Modifier
+                                        .fillMaxHeight()
+                                        .padding(vertical = 10.dp)
+                                        .padding(end = 20.dp),
+                                    cells = cells,
+                                    cellNotes = cellNotes,
+                                    actions = actions,
+                                    selectedCell = sudokuViewModel.selectedIndex,
+                                    selectedCells = sudokuViewModel.selectedIndices,
+                                )
+                            }
+                            else{
+                                EmptySudokuCanvas(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(vertical = 10.dp)
+                                        .padding(end = 20.dp),
+                                    actions = actions,
+                                    timerActions = timerActions
+                                )
+                            }
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.SpaceAround,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(1f)
+                        ) {
+                            TopRow(
+                                navController = navController,
+                                name = sudokuGame.name,
                                 modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(vertical = 10.dp)
-                                    .padding(end = 20.dp),
-                                actions = actions,
+                                    .padding(top = 10.dp)
+                                    .padding(horizontal = 5.dp),
                                 timerActions = timerActions
                             )
+                            SecondTopRow(
+                                lives = sudokuViewModel.lifeCount,
+                                difficulty = sudokuViewModel.difficulty.label,
+                                sudokuSize = sudokuGame.size,
+                                sudokuVariant = sudokuViewModel.variant.icon
+                            )
+                            Row() {
+                                Timer(timer = time, timerActions = timerActions)
+                                IconButton(
+                                    onClick = { swapedControls = !swapedControls }
+                                ){
+                                    Icon(
+                                        painter = painterResource(R.drawable.swap),
+                                        contentDescription = "swap controls"
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.size(10.dp))
+                            SudokuToolBar(actions)
+                            NumRow(
+                                modifier = Modifier,
+                                numbers = (1 .. sudokuGame.size).map { it },
+                                actions = actions
+                            )
+                            Spacer(Modifier.size(10.dp))
                         }
-                    }
 
+                    }
                 }
-    }
+            }
 }
 
 @Composable
@@ -504,7 +614,7 @@ fun SecondTopRow(lives: Int, difficulty: Int, sudokuSize: Int, modifier: Modifie
         Text(stringResource(difficulty), color = primaryColor)
         Text("$sudokuSize x $sudokuSize", color = primaryColor)
         Icon(
-            painter = painterResource(id = sudokuVariant),
+            painter = painterResource(sudokuVariant),
             tint = MaterialTheme.colorScheme.primary,
             contentDescription = "VariantIcon",
             modifier = Modifier.size(20.dp)
@@ -587,7 +697,8 @@ fun SudokuCanvas(
     cellNotes: List<BooleanArray>,
     actions: SudokuActions,
     selectedCell: Int,
-    selectedCells: Set<Int>
+    selectedCells: Set<Int>,
+    isStatic: Boolean = false
 ){
     val textMeasurer = rememberTextMeasurer()
     val numbers = actions.getNumbers
@@ -623,8 +734,9 @@ fun SudokuCanvas(
     var lastIndex by remember { mutableIntStateOf(-1) }
     val chars = remember { List(numbers) {it+1}.toChar()}
 
-    Canvas(
-        modifier = modifier
+
+    val finalModifier = if (!isStatic){
+        modifier
             .aspectRatio(1f)
             /*.border(
                 color = colors.lineColor,
@@ -654,6 +766,10 @@ fun SudokuCanvas(
 
                 )
             }
+    } else modifier.aspectRatio(1f)
+
+    Canvas(
+        modifier = finalModifier
     ){
          val cellSize = size.width / numbers
 
