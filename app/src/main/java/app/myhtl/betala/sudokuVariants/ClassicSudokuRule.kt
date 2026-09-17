@@ -1,4 +1,4 @@
-package app.myhtl.betala.SudokuVarients
+package app.myhtl.betala.sudokuVariants
 
 import app.myhtl.betala.opensudoku.clearNote
 import kotlin.math.sqrt

@@ -4,12 +4,15 @@ import android.util.Log
 import android.util.Xml
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.StringWriter
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Collections.addAll
 import kotlin.math.sqrt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -252,8 +255,10 @@ class Sudoku(
             var created = ""
             var source = ""
             var sourceURL = ""
+            var data: List<Int> = listOf()
             var level = Difficulty.Medium
-            var variant = Variant.Classic
+            var variant: Set<Variant> = setOf()
+            var solutions: List<IntArray> = listOf()
 
             while (parser.next() != XmlPullParser.END_DOCUMENT) {
                 when (parser.eventType) {
@@ -270,30 +275,40 @@ class Sudoku(
                             "source" -> source = parser.nextText()
                             "sourceURL" -> sourceURL = parser.nextText()
                             "variant" -> try {
-                                variant = Variant.valueOf(parser.nextText())
+                                variant.plus(Variant.valueOf(parser.nextText()))
                             } catch (_: Exception) {
                             }
 
                             "game" -> {
                                 val encodedGame =
                                     parser.getAttributeValue(null, "data")
+                                val solutionString =
+                                    parser.getAttributeValue(null, "solution")
 
                                 requireNotNull(encodedGame) {
-                                    "Das Attribut 'data' fehlt."
+                                    "Attribute 'data' does not exist"
                                 }
-                                require(encodedGame.length == 81) {
-                                    "Erwartet wurden 81 Zeichen, erhalten: ${encodedGame.length}"
+                                if (solutionString.isNullOrBlank()) {
+                                    Variant.Classic.
+                                    SudokuSolver()
                                 }
-                                require(encodedGame.all { it in '0'..'9' }) {
-                                    "Das Sudoku enthält ungültige Zeichen."
+                                requireNotNull(solutionString) {
+                                    "Attribute 'solution' does not exist"
+                                }
+                                // TODO Implement Sudoku validation based on Metadata
+                                if (source != "Betala") {
+                                    require(encodedGame.length == 81) {
+                                        "Sudoku contains ${encodedGame.length} chars, expected are 81"
+                                    }
+                                    require(encodedGame.all { it in '0'..'9' }) {
+                                        "Sodoku contains invalid chars."
+                                    }
                                 }
 
-                                val parsedValues = encodedGame.map { character ->
+                                data = encodedGame.map { character ->
                                     character.digitToInt()
                                 }
-                                val gameList = mutableStateListOf<Int>().apply {
-                                    addAll(parsedValues)
-                                }
+
                                 Log.d("GameManager", "Sudoku added ($name)")
                             }
                         }
@@ -302,14 +317,20 @@ class Sudoku(
             }
             return Sudoku(
                 MetaData(
-                    name = TODO(),
-                    level = TODO(),
-                    created = TODO()
+                    name = name,
+                    author = author,
+                    level = level,
+                    created = LocalDateTime.parse(
+                        created,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                    ),
+                    source = source,
+                    sourceURL = sourceURL
                 ),
                 Game(
-                    data = TODO(),
-                    solution = TODO(),
-                    variant = TODO()
+                    data = data.toMutableStateList(),
+                    solution = solutions,
+                    variant = variant
                 )
             )
         }

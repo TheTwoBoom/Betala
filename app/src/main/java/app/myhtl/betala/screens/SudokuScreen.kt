@@ -74,9 +74,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.myhtl.betala.AppAdditionalDestinations
-import app.myhtl.betala.SudokuVarients.ClassicSudokuRule
-import app.myhtl.betala.SudokuVarients.KnightsMoveRule
-import app.myhtl.betala.SudokuVarients.NonConsecutiveRule
+import app.myhtl.betala.sudokuVariants.ClassicSudokuRule
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.opensudoku.SudokuSolver

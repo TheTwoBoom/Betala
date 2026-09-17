@@ -7,13 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import app.myhtl.betala.SudokuVarients.ClassicSudokuRule
-import app.myhtl.betala.SudokuVarients.KnightsMoveRule
-import app.myhtl.betala.SudokuVarients.NonConsecutiveRule
+import app.myhtl.betala.sudokuVariants.ClassicSudokuRule
 import app.myhtl.betala.opensudoku.Difficulty
 import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.opensudoku.SudokuGeneratorV2
-import app.myhtl.betala.opensudoku.Variant
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

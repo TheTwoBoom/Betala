@@ -1,4 +1,4 @@
-package app.myhtl.betala.SudokuVarients
+package app.myhtl.betala.sudokuVariants
 
 
 // this is different from SudokuRule, because it doesn't change or influence the Solution for the puzzle, it only changes the way the Sudoku can be solved

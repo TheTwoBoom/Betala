@@ -3,7 +3,7 @@ package app.myhtl.betala.opensudoku
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import app.myhtl.betala.SudokuVarients.SudokuRule
+import app.myhtl.betala.sudokuVariants.SudokuRule
 import kotlin.math.sqrt
 import kotlin.random.Random
 

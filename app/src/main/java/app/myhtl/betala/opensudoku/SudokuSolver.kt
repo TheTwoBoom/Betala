@@ -1,6 +1,6 @@
 package app.myhtl.betala.opensudoku
 
-import app.myhtl.betala.SudokuVarients.SudokuRule
+import app.myhtl.betala.sudokuVariants.SudokuRule
 import kotlin.collections.copyOf
 import kotlin.math.sqrt
 
