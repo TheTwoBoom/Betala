@@ -40,8 +40,6 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     val currentGame by derivedStateOf { currentSudoku.game }
     var sudokuMode by mutableStateOf(SudokuMode.GENERATOR)
 
-    //var size by mutableStateOf(Size.Classic) // not needed
-
     var selectedIndex by mutableIntStateOf(0)
     var selectedIndices by mutableStateOf(setOf<Int>())
     var gameSize by mutableIntStateOf(currentGame.size ?: 0)
