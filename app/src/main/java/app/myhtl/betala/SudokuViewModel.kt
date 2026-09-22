@@ -1,7 +1,6 @@
 package app.myhtl.betala
 
 import android.app.Application
-import android.app.GameManager
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -23,6 +22,8 @@ import app.myhtl.betala.utils.SettingUtils
 import java.time.LocalDateTime
 import java.util.Stack
 import kotlin.collections.copyOf
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 enum class SudokuMode {
     GENERATOR,
@@ -34,16 +35,16 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     private var canUndo by mutableStateOf(false)
     private var moveFuture = Stack<SudokuMove>()
     private var canRedo by mutableStateOf(false)
-    var currentSudoku by mutableStateOf<Sudoku?>(null)
+    var currentSudoku by mutableStateOf<Sudoku>(Sudoku.empty())
     //currentGame updates itself automatically
-    val currentGame by derivedStateOf { currentSudoku?.game }
+    val currentGame by derivedStateOf { currentSudoku.game }
     var sudokuMode by mutableStateOf(SudokuMode.GENERATOR)
 
     //var size by mutableStateOf(Size.Classic) // not needed
 
     var selectedIndex by mutableIntStateOf(0)
     var selectedIndices by mutableStateOf(setOf<Int>())
-    var gameSize by mutableIntStateOf(currentGame?.size ?: 0)
+    var gameSize by mutableIntStateOf(currentGame.size ?: 0)
     var isNoteMode by mutableStateOf(false)
     var isFinishedAndCorrect by mutableStateOf(false)
     var errorArray = BooleanArray(gameSize * gameSize) { false }
@@ -62,9 +63,6 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     var isGenerating by mutableStateOf(false)
 
     //timer
-    private val _seconds = MutableStateFlow(0)
-    val seconds = _seconds.asStateFlow()
-
     private val _isRunning = MutableStateFlow(false)
     val isRunning = _isRunning.asStateFlow()
 
@@ -74,7 +72,7 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     private var msAfterLastStart = 0L
 
 //generates if generate is true or empty
-    fun generateAndStartNewGame(numbers: Int, boxWith: Int, boxHeight: Int, difficulty: Difficulty, variants: Set<Variant>, sudokuName: String, generate: Boolean){
+    fun generateAndStartNewGame(numbers: Int, boxWith: Int, boxHeight: Int, difficulty: Difficulty, variants: Set<Variant>, sudokuName: String, generate: Boolean = false){
         moveHistory.clear()
         moveFuture.clear()
         updateUndoRedoFlags()
@@ -174,7 +172,7 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         moveFuture: Stack<SudokuMove>,
         isFinished: Boolean = false,
         errorArray: BooleanArray = BooleanArray(
-            currentGame?.size ?: 0
+            currentGame.size
         ) { false },
         time: Int
     ) {
@@ -185,9 +183,9 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         // for safety leave old game
         leaveGame()
         //TODO() update timer to Duration!
-        setTime(0)
+        setTime(0.seconds)
         pauseOrResumeTimer()
-        gameSize = currentGame?.size ?: return
+        gameSize = currentGame.size
         this.errorArray = errorArray
         selectedIndex = gameSize * gameSize / 2
         selectedIndices = emptySet()
@@ -196,8 +194,8 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun leaveGame() {
-        stopAndResetTimer()
         // TODO() Save game
+        stopAndResetTimer()
     }
 
     fun setIndex(index: Int) {
@@ -210,18 +208,17 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun onNumberSelected(number: Int) {
-        val game = currentGame ?: return
         val indices = selectedIndices + selectedIndex
 
         val oldMove = getCurrentMove()
 
         var valueChanged = true
         if (!isNoteMode && selectedIndices.isEmpty()) {
-            valueChanged = game.changeValues(indices, number)
+            valueChanged = currentGame.changeValues(indices, number)
 
             if (valueChanged) validateSudoku(indices)
         } else if(!isNoteModeDisabled) {
-            valueChanged = game.toggleNotes(indices, number)
+            valueChanged = currentGame.toggleNotes(indices, number)
         }
 
         if (!valueChanged) return
@@ -240,13 +237,12 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
 
     fun eraseCell() {
 
-        val game = currentGame ?: return
         val indices = selectedIndices + selectedIndex
 
         val oldMove = getCurrentMove()
 
-        val valueChanged = game.clearDataAt(indices)
-        val noteChanged = game.clearNotes(indices)
+        val valueChanged = currentGame.clearDataAt(indices)
+        val noteChanged = currentGame.clearNotes(indices)
         if (!valueChanged && !noteChanged) return
 
         pushMoveToHistory(oldMove)
@@ -255,23 +251,23 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun sameValue(value: Int): Boolean {
-        return value != 0 && value == currentGame?.data[selectedIndex]
+        return value != 0 && value == currentGame.data[selectedIndex]
     }
 
     fun isEditable(index: Int): Boolean {
-        return currentGame?.originalList?.get(index) == 0
+        return currentGame.originalList.get(index) == 0
     }
 
 
     fun validateSudoku(affectedIndices: Set<Int> = emptySet(), changeLives: Boolean = true) {
-        val checkCorrect = currentGame?.checkCorrect()
+        val checkCorrect = currentGame.checkCorrect()
         for (i in 0 until gameSize * gameSize) {
-            errorArray[i] = checkCorrect?.get(i) != 0
+            errorArray[i] = checkCorrect.get(i) != 0
         }
         if (!changeLives) return
         if (affectedIndices.any { index ->
-                errorArray[index] && currentGame?.data[index] != 0
-            }) currentSudoku?.userData?.lifeCount--
+                errorArray[index] && currentGame.data[index] != 0
+            }) currentSudoku.userData.removeLife()
     }
 
     fun hasError(index: Int): Boolean {
@@ -281,19 +277,19 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
 
     fun finishedNumbers(): BooleanArray {
         val finishedNumbers = IntArray(gameSize)
-        currentGame?.data?.forEach { value ->
+        currentGame.data.forEach { value ->
             if (value != 0) finishedNumbers[value - 1]++
         }
         return BooleanArray(gameSize) { i -> finishedNumbers[i] >= gameSize }
     }
 
     fun updateIsFinishedAndCorrect() {
-        isFinishedAndCorrect = currentGame?.isFullyCorrect == true
+        isFinishedAndCorrect = currentGame.isFullyCorrect == true
     }
 
 
     fun undoMove() {
-        val game = currentGame ?: return
+        val game = currentGame
         if (moveHistory.isEmpty()) return
 
         val lastMove = moveHistory.pop()
@@ -316,7 +312,6 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun redoMove() {
-        val game = currentGame ?: return
         if (moveFuture.isEmpty()) return
 
         val futureMove = moveFuture.pop()
@@ -325,15 +320,15 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         val undoStates = futureMove.moves.map { state ->
             CellState(
                 index = state.index,
-                value = game.data[state.index],
-                notes = game.noteData[state.index].copyOf()
+                value = currentGame.data[state.index],
+                notes = currentGame.noteData[state.index].copyOf()
             )
         }
         moveHistory.push(SudokuMove(undoStates))
 
         futureMove.moves.forEach { state ->
-            game.data[state.index] = state.value
-            game.noteData[state.index] = state.notes
+            currentGame.data[state.index] = state.value
+            currentGame.noteData[state.index] = state.notes
         }
 
         validateSudoku(changeLives = false)
@@ -349,14 +344,13 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     fun canRedo() = canRedo
 
     private fun getCurrentMove(): SudokuMove? {
-        val game = currentGame ?: return null
 
         val indices = selectedIndices + selectedIndex
         val states = indices.map { index ->
             CellState(
                 index = index,
-                value = game.data[index],
-                notes = game.noteData[index].copyOf()
+                value = currentGame.data[index],
+                notes = currentGame.noteData[index].copyOf()
             )
         }
         return SudokuMove(states)
@@ -368,14 +362,13 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun pushMoveToFuture() {
-        val game = currentGame ?: return
 
         val indices = selectedIndices + selectedIndex
         val states = indices.map { index ->
             CellState(
                 index = index,
-                value = game.data[index],
-                notes = game.noteData[index].copyOf()
+                value = currentGame.data[index],
+                notes = currentGame.noteData[index].copyOf()
             )
         }
         moveFuture.push(SudokuMove(states))
@@ -396,9 +389,9 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
                     val elapsedTime = System.currentTimeMillis() - msAfterLastStart
                     val totalMS = msAfterPaused + elapsedTime
 
-                    _seconds.value = (totalMS / 1000).toInt()
+                    currentSudoku.userData.timer = (totalMS / 1000).toInt().seconds
 
-                    delay(1000L)
+                    delay(200L)
                 }
             }
         }
@@ -407,15 +400,14 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
     fun stopAndResetTimer() {
         _isRunning.value = false
         timer?.cancel()
-        _seconds.value = 0
         msAfterPaused = 0L
         msAfterLastStart = 0L
     }
 
-    fun setTime(sec: Int){
-        _seconds.value = sec
-        msAfterPaused = 0L
-        msAfterLastStart = 0L
+    fun setTime(duration: Duration){
+        currentSudoku.userData.timer = duration
+        msAfterPaused = duration.inWholeMilliseconds
+        msAfterLastStart = System.currentTimeMillis()
     }
 }
 

@@ -2,7 +2,9 @@ package app.myhtl.betala.opensudoku
 
 import android.util.Log
 import android.util.Xml
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
@@ -12,7 +14,6 @@ import java.io.InputStream
 import java.io.StringWriter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Collections.addAll
 import kotlin.math.sqrt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -26,25 +27,35 @@ class Sudoku(
     data class MetaData(
         val name: String,
         val author: String = "Betala",
-        val level: Difficulty,
-        val created: LocalDateTime,
+        val difficulty: Difficulty,
+        val creationTime: LocalDateTime = LocalDateTime.now(),
         val source: String = "Betala",
         val sourceURL: String = "https://app.betala.eu",
     )
 
-    data class UserData(
-        var lifeCount: Int = 3,
-        var timer: Duration = 0.seconds
-    )
+    class UserData(
+        private var initialLifeCount: Int = 3,
+        var initialTimer: Duration = 0.seconds
+
+    ){
+        var lifeCount by mutableStateOf(initialLifeCount)
+            private set
+        var timer by mutableStateOf(initialTimer)
+
+        fun removeLife(){
+            lifeCount--
+        }
+    }
 
     data class Game(
-        val data: SnapshotStateList<Int>,
-        val solution: List<IntArray>,
+        val size: Int,
+        val data: SnapshotStateList<Int> = SnapshotStateList(size){ 0 },
+        val solution: IntArray = IntArray(size){0},
         var preview: ImageBitmap? = null,
-        val size: Int = sqrt(data.size.toDouble()).toInt(),
         val boxWidth: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
         val boxHeight: Int = sqrt(sqrt(data.size.toDouble())).toInt(),
-        val variant: Set<Variant>,
+        val variants: Set<Variant>,
+        //maybe change to SnapshotStateList<Int> with Bitwise Operation
         val noteData: SnapshotStateList<BooleanArray> = SnapshotStateList(data.size) {
             BooleanArray(
                 sqrt(data.size.toDouble()).toInt()
@@ -220,9 +231,9 @@ class Sudoku(
             val value = when (tag) {
                 "name" -> metadata.name
                 "author" -> metadata.author
-                "variant" -> game.variant.joinToString()
-                "level" -> metadata.level.name
-                "created" -> metadata.created.toString()
+                "variant" -> game.variants.joinToString()
+                "level" -> metadata.difficulty.name
+                "created" -> metadata.creationTime.toString()
                 "source" -> metadata.source
                 "sourceURL" -> metadata.sourceURL
                 else -> ""
@@ -243,6 +254,17 @@ class Sudoku(
     }
 
     companion object {
+        fun empty() = Sudoku(
+            metadata = MetaData(
+                name = "emptySudoku",
+                difficulty = Difficulty.Medium,
+            ),
+            game = Game(
+                size = 9,
+                variants = emptySet()
+            )
+        )
+
         fun fromXML(xmlString: String): Sudoku {
             val parser: XmlPullParser = Xml.newPullParser()
             val inputStream: InputStream = ByteArrayInputStream(xmlString.toByteArray())
@@ -257,8 +279,8 @@ class Sudoku(
             var sourceURL = ""
             var data: List<Int> = listOf()
             var level = Difficulty.Medium
-            var variant: Set<Variant> = setOf()
-            var solutions: List<IntArray> = listOf()
+            val variant: Set<Variant> = setOf()
+            val solutions: IntArray = IntArray(0)
 
             while (parser.next() != XmlPullParser.END_DOCUMENT) {
                 when (parser.eventType) {
@@ -289,8 +311,8 @@ class Sudoku(
                                     "Attribute 'data' does not exist"
                                 }
                                 if (solutionString.isNullOrBlank()) {
-                                    Variant.Classic.
-                                    SudokuSolver()
+                                    /*Variant.Classic.
+                                    SudokuSolver()*/
                                 }
                                 requireNotNull(solutionString) {
                                     "Attribute 'solution' does not exist"
@@ -319,8 +341,8 @@ class Sudoku(
                 MetaData(
                     name = name,
                     author = author,
-                    level = level,
-                    created = LocalDateTime.parse(
+                    difficulty = level,
+                    creationTime = LocalDateTime.parse(
                         created,
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                     ),
@@ -330,7 +352,8 @@ class Sudoku(
                 Game(
                     data = data.toMutableStateList(),
                     solution = solutions,
-                    variant = variant
+                    variants = variant,
+                    size = data.size
                 )
             )
         }

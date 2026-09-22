@@ -44,7 +44,6 @@ import app.myhtl.betala.R
 import app.myhtl.betala.SudokuMode
 import app.myhtl.betala.SudokuViewModel
 import app.myhtl.betala.opensudoku.Difficulty
-import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.opensudoku.Variant
 import com.google.common.math.IntMath.sqrt
 import java.math.RoundingMode
@@ -194,18 +193,19 @@ fun SetSudokuRulesScreen(
             if (sudokuViewModel.sudokuMode == SudokuMode.CREATOR) {
                 Button(
                     onClick = {
-                        val sudoku = GameManager.OpenSudoku(
-                            name = nameState.text.toString(),
-                            level = selectedDifficulty,
-                            variant = selectedVariant.variant,
-                            games = mutableListOf(
-                                GameManager.SudokuGame(
-                                    data = SnapshotStateList(numbers * numbers) { 0 },
-                                    boxWidth = selectedBoxWidth,
-                                    boxHeight = selectedBoxHeight
-                                )
-                            sudokuViewModel.startNewGame(sudoku)
-                            navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+//                        val sudoku = GameManager.OpenSudoku(
+//                            name = nameState.text.toString(),
+//                            level = selectedDifficulty,
+//                            variant = selectedVariant.variant,
+//                            games = mutableListOf(
+//                                GameManager.SudokuGame(
+//                                    data = SnapshotStateList(numbers * numbers) { 0 },
+//                                    boxWidth = selectedBoxWidth,
+//                                    boxHeight = selectedBoxHeight
+//                                )
+//                            sudokuViewModel.startNewGame(sudoku)
+//                            navController.navigate(AppAdditionalDestinations.SUDOKU.route)
+
                         }
                     ) {
                         Row(
@@ -223,8 +223,6 @@ fun SetSudokuRulesScreen(
                     val creationText = stringResource(R.string.generated)
                     Button(
                         onClick = {
-                            sudokuViewModel.variant = selectedVariant.variant
-                            sudokuViewModel.difficulty = selectedDifficulty
 
                             navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                             sudokuViewModel.generateAndStartNewGame(
@@ -232,7 +230,8 @@ fun SetSudokuRulesScreen(
                                 boxWith = selectedBoxWidth,
                                 boxHeight = selectedBoxHeight,
                                 difficulty = selectedDifficulty,
-                                sudokuName = creationText
+                                sudokuName = creationText,
+                                variants = setOf(selectedVariant.variant)
                             )
                             navController.navigate(AppAdditionalDestinations.SUDOKU.route)
                         }

@@ -76,8 +76,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.sudokuVariants.ClassicSudokuRule
 import app.myhtl.betala.SudokuViewModel
-import app.myhtl.betala.opensudoku.GameManager
 import app.myhtl.betala.opensudoku.SudokuSolver
+import app.myhtl.betala.opensudoku.Variant
 import kotlin.math.floor
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -147,8 +147,9 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         navController.popBackStack()
     }
 
-    val openSudoku: GameManager.OpenSudoku = sudokuViewModel.opnSudoku ?: return
-    val sudokuGame = openSudoku.games[0]
+    val sudokuGame = sudokuViewModel.currentGame
+    val userData = sudokuViewModel.currentSudoku.userData
+    val metadata = sudokuViewModel.currentSudoku.metadata
     val rowCount = sudokuGame.size
     val columnCount = sudokuGame.size
     val cells = sudokuGame.data
@@ -169,7 +170,7 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
         getNumbers = sudokuGame.size,
         getBoxWidth = sudokuGame.boxWidth,
         getBoxHeight = sudokuGame.boxHeight,
-        lives = openSudoku.lifeCount,
+        lives = userData.lifeCount,
         getFinishedNumbers = { sudokuViewModel.finishedNumbers() },
         undoMove = { sudokuViewModel.undoMove() },
         canUndo = { sudokuViewModel.canUndo() },
@@ -179,10 +180,8 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
 
     var swapedControls by remember { mutableStateOf(false) }
 
-    //timer
-    val totalSeconds by sudokuViewModel.seconds.collectAsStateWithLifecycle()
+    val duration = userData.timer
     val isRunning by sudokuViewModel.isRunning.collectAsStateWithLifecycle()
-
     val isGenerating = sudokuViewModel.isGenerating
 
     val timerActions = TimerActions(
@@ -192,8 +191,8 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
     )
 
 
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
+    val minutes = duration.inWholeMinutes
+    val seconds = duration.inWholeSeconds % 60
     val time = String.format(java.util.Locale.GERMANY, "%02d:%02d", minutes, seconds)
 
     //TODO() doesn't work
@@ -228,7 +227,7 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
 
             TopRow(
                 navController,
-                openSudoku.name,
+                metadata.name,
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(horizontal = 5.dp),
@@ -249,10 +248,10 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
 
                 ) {
                     SecondTopRow(
-                        lives = openSudoku.lifeCount,
-                        difficulty = openSudoku.level.label,
+                        lives = userData.lifeCount,
+                        difficulty = metadata.difficulty.label,
                         sudokuSize = sudokuGame.size,
-                        sudokuVariant = openSudoku.variant.icon
+                        sudokuVariants = sudokuGame.variants
                     )
                     Spacer(Modifier.size(5.dp))
                     if (timerActions.timerIsRunning) {
@@ -374,17 +373,17 @@ fun SudokuScreen(navController: NavController, sudokuViewModel: SudokuViewModel)
                     ) {
                         TopRow(
                             navController = navController,
-                            name = openSudoku.name,
+                            name = metadata.name,
                             modifier = Modifier
                                 .padding(top = 10.dp)
                                 .padding(horizontal = 5.dp),
                             timerActions = timerActions
                         )
                         SecondTopRow(
-                            lives = openSudoku.lifeCount,
-                            difficulty = openSudoku.level.label,
+                            lives = userData.lifeCount,
+                            difficulty = metadata.difficulty.label,
                             sudokuSize = sudokuGame.size,
-                            sudokuVariant = openSudoku.variant.icon
+                            sudokuVariants = sudokuGame.variants
                         )
                         Row() {
                             Timer(timer = time, timerActions = timerActions)
@@ -550,7 +549,7 @@ fun SecondTopRow(
     difficulty: Int,
     sudokuSize: Int,
     modifier: Modifier = Modifier,
-    sudokuVariant: Int
+    sudokuVariants: Set<Variant>
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     Row(
@@ -570,8 +569,9 @@ fun SecondTopRow(
 
         Text(stringResource(difficulty), color = primaryColor)
         Text("$sudokuSize x $sudokuSize", color = primaryColor)
+        for (variant in sudokuVariants)
         Icon(
-            painter = painterResource(sudokuVariant),
+            painter = painterResource(variant.icon),
             tint = MaterialTheme.colorScheme.primary,
             contentDescription = "VariantIcon",
             modifier = Modifier.size(20.dp)

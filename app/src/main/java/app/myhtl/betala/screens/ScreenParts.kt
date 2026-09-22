@@ -69,7 +69,6 @@ import app.myhtl.betala.AppAdditionalDestinations
 import app.myhtl.betala.ui.theme.BetalaTheme
 import app.myhtl.betala.R
 import app.myhtl.betala.SudokuViewModel
-import app.myhtl.betala.opensudoku.GameManager
 import com.google.ar.core.Anchor
 import com.google.ar.core.Config
 import com.google.ar.core.Plane
@@ -84,7 +83,7 @@ import io.github.sceneview.rememberViewNodeManager
 import io.github.sceneview.math.Scale
 import io.github.sceneview.rememberMaterialLoader
 
-@Composable
+/*@Composable
 fun ARTapToPlace(sudokuGame: GameManager.SudokuGame) {
     var anchor by remember { mutableStateOf<Anchor?>(null) }
     val engine = rememberEngine()
@@ -136,7 +135,7 @@ fun ARTapToPlace(sudokuGame: GameManager.SudokuGame) {
             }
         }
     }
-}
+}*/
 
 @Composable
 fun Header(
