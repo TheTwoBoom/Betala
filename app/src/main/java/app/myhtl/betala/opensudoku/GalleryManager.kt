@@ -33,7 +33,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 import java.io.BufferedReader
 import app.myhtl.betala.screens.SudokuCanvas
 import kotlin.collections.isNotEmpty
@@ -42,7 +41,7 @@ import java.io.FileOutputStream
 
 
 object GalleryManager {
-    var allSudokus: SnapshotStateList<GameManager.OpenSudoku> = SnapshotStateList()
+    var allSudokus: SnapshotStateList<Sudoku> = SnapshotStateList()
 
     var isLoading by mutableStateOf(true)
         private set
@@ -75,28 +74,25 @@ object GalleryManager {
 
     suspend fun generatePreviews(context: Context) {
         for (i in allSudokus.indices) {
-            val openSudoku = allSudokus[i]
-            for (game in openSudoku.games) {
-                withContext(Dispatchers.Main) {
-                    game.preview = createBitmapFromSudoku(context, game.data.toList())
-                }
-                yield()
+            val sudoku = allSudokus[i]
+            withContext(Dispatchers.Main) {
+                sudoku.game.preview = createBitmapFromSudoku(context, sudoku.game.data)
             }
             // SnapshotStateList-Änderung triggern → UI aktualisiert sich
-            allSudokus[i] = openSudoku
+            allSudokus[i] = sudoku
         }
         isLoading = false
     }
 
-    fun getAllSudokus(): List<GameManager.OpenSudoku> {
+    fun getAllSudokus(): List<Sudoku> {
         return allSudokus
     }
 
     fun getFilteredSudokus(
         context: Context,
         filters: List<FilterOption>
-    ): List<GameManager.OpenSudoku> {
-        var list: List<GameManager.OpenSudoku> = getAllSudokus()
+    ): List<Sudoku> {
+        var list: List<Sudoku> = getAllSudokus()
         val fFilter = filters.firstOrNull { it.id == "favorite"}
         val lFilter = filters.firstOrNull { it.id == "level" }
         val aFilter = filters.firstOrNull { it.id == "author" }
@@ -110,15 +106,15 @@ object GalleryManager {
         return list
     }
 
-    fun filterFavorites(filter: FilterOption, list: List<GameManager.OpenSudoku>, context: Context): List<GameManager.OpenSudoku> {
+    fun filterFavorites(filter: FilterOption, list: List<Sudoku>, context: Context): List<Sudoku> {
         val sharedPref = (context as? Activity)?.getPreferences(Context.MODE_PRIVATE)
         val favorites = sharedPref?.getStringSet("favoriteSudokus", HashSet<String>())
             ?.toMutableSet()
         return if (filter.options.first().isSelected) {
-            list.filter { favorites?.contains(it.name)!! }
+            list.filter { favorites?.contains(it.metadata.name)!! }
         } else list
     }
-    fun filterDifficulty(filter: FilterOption, list: List<GameManager.OpenSudoku>): List<GameManager.OpenSudoku> {
+    fun filterDifficulty(filter: FilterOption, list: List<Sudoku>): List<Sudoku> {
         val selectedLevels = filter
             .options
             .filter { it.isSelected }
@@ -126,25 +122,25 @@ object GalleryManager {
             .toSet()
 
         return if (selectedLevels.isNotEmpty()) {
-            list.filter { sudoku -> sudoku.level.name in selectedLevels }
+            list.filter { sudoku -> sudoku.metadata.level.name in selectedLevels }
         } else list
     }
-    fun filterAuthor(filter: FilterOption, list: List<GameManager.OpenSudoku>): List<GameManager.OpenSudoku> {
+    fun filterAuthor(filter: FilterOption, list: List<Sudoku>): List<Sudoku> {
         val selectedAuthors = filter
             .options
             .filter { it.isSelected }
             .map { it.id }
             .toSet()
         return if (selectedAuthors.isNotEmpty()) {
-            list.filter { sudoku -> sudoku.author in selectedAuthors }
+            list.filter { sudoku -> sudoku.metadata.author in selectedAuthors }
         } else list
     }
 
     fun generateAuthorFilters(): SnapshotStateList<FilterEntry> {
         val authorList = mutableStateListOf<FilterEntry>()
         allSudokus.forEach { s ->
-            if (authorList.none { it.label == s.author }) {
-                authorList.add(FilterEntry(s.author, s.author, false))
+            if (authorList.none { it.label == s.metadata.author }) {
+                authorList.add(FilterEntry(s.metadata.author, s.metadata.author, false))
             }
         }
         return authorList
@@ -158,10 +154,10 @@ object GalleryManager {
                 .use(BufferedReader::readText)
         }
 
-        val sudoku = GameManager.parseSudokuFile(sudokuString)
+        val sudoku = Sudoku.fromXML(sudokuString)
 
         withContext(Dispatchers.Main.immediate) {
-            sudoku?.let(allSudokus::add)
+            sudoku.let(allSudokus::add)
         }
     }
 
@@ -173,15 +169,15 @@ object GalleryManager {
             )
         }
 
-        val sudoku = GameManager.parseSudokuFile(sudokuString)
+        val sudoku = Sudoku.fromXML(sudokuString)
 
         withContext(Dispatchers.Main.immediate) {
-            sudoku?.let(allSudokus::add)
+            sudoku.let(allSudokus::add)
         }
     }
 
     @Suppress("unused")
-    fun getStore(): List<GameManager.OpenSudoku> {
+    fun getStore(): List<Sudoku> {
         return listOf()
     }
 
@@ -208,7 +204,6 @@ object GalleryManager {
         if (context.cacheDir?.list()?.contains("$sudokuString.webp") == true) {
             println("Image was cached")
             bitmap = decodeFile(context.cacheDir.path + "/" + "$sudokuString.webp").asImageBitmap()
-        //bitmap = ImageBitmap(800, 800)
         } else {
             bitmap = useVirtualDisplay(context) { display ->
                 captureComposable(
@@ -236,7 +231,7 @@ object GalleryManager {
             val path = context.cacheDir.path + "/" + "$sudokuString.webp"
             withContext(Dispatchers.IO) {
                 val fileOutputStream = FileOutputStream(path)
-                bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 50, fileOutputStream)
+                bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 90, fileOutputStream)
                 fileOutputStream.close()
             }
         }
